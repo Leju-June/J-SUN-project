@@ -1,0 +1,59 @@
+# 서버의 같은 폴더에 Caddyfile과 .env를 함께 둔다.
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      - app
+
+  app:
+    image: ghcr.io/leju-june/jeenee:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://jeenee:${POSTGRES_PASSWORD}@db:5432/jeenee
+      TRUST_PROXY: "1"
+    # 외부 포트를 열지 않아야 Caddy만 X-Real-IP를 설정할 수 있다.
+    expose:
+      - "3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  migrate:
+    image: ghcr.io/leju-june/jeenee:latest
+    profiles: [tools]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://jeenee:${POSTGRES_PASSWORD}@db:5432/jeenee
+    command: sh -c "npm run db:migrate && npm run db:seed"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jeenee
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: jeenee
+    volumes:
+      - jeenee-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jeenee"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  caddy-data:
+  jeenee-db:

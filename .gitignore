@@ -1,0 +1,16 @@
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# 비밀값
+.env
+.env.local
+.env.*.local
+
+# 로컬 환경
+.venv/
+models/
+.claude/
