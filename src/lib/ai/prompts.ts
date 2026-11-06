@@ -1,3 +1,4 @@
+import { JUDGED_SLOTS, type Shortlist } from "../draw";
 import { SCENE_DELIMITER } from "../scenes";
 import type { StoryTier } from "../scoring";
 
@@ -11,7 +12,11 @@ export const ANALYSIS_SYSTEM = `너는 소원을 평가하는 채점관이다. <
 - realism: 현실에서 일어날 수 있는 일인가. "하늘을 날 수 있게 해줘"나 "불사"는 낮다.
 - density: 글자를 낭비하지 않고 의미 있는 조건을 담았는가. 길이가 아니라 글자 수 대비 내용을 본다. 짧아도 완벽할 수 있고, 같은 말을 반복한 글은 낮다.
 - narrative: 이야기로 풀어낼 거리가 있는가.
-- keywords: 소원의 핵심 단어를 원문에서 뽑는다.`;
+
+<candidates>에서 슬롯마다 이 소원에 어울리는 번호를 3개 고른다. 보기 좋은 말이 아니라 이 소원의 문구로 실제 이야기를 만들 수 있는 것을 고른다.
+- loophole: 이 소원의 문구에서 실제로 파고들 수 있는 허점.
+- price: 이 소원을 이루었을 때 치르게 될 대가로 자연스러운 것.
+- ending: 이 소원의 이야기가 맺어질 만한 결말.`;
 
 export const STORY_SYSTEM = `너는 소원을 들어주는 교활한 지니의 이야기를 쓰는 한국어 소설가다. 지니는 소원에 적힌 내용만 정확히 이루어 주고, 적히지 않은 빈틈으로 불행을 만든다.
 
@@ -29,8 +34,12 @@ export const REVIEW_SYSTEM = `너는 공개 게시 전에 글을 검사한다. <
 - 금지: 한글 실명(예: 성+이름), JUN HEON처럼 영문으로 쓴 성+이름, 유명인을 특정하는 표현.
 - 허용: A씨 같은 익명 표기, JIN처럼 한 단어로 된 별명, 가상의 인물, 일반 명사.`;
 
-export function analysisPrompt(wish: string) {
-  return `<wish>${wish}</wish>`;
+export function analysisPrompt(wish: string, shortlist: Shortlist) {
+  const sections = JUDGED_SLOTS.map((slot) => {
+    const lines = shortlist[slot].map((keyword) => `${keyword.id}. ${keyword.word}: ${keyword.description}`);
+    return `[${slot}]\n${lines.join("\n")}`;
+  });
+  return `<wish>${wish}</wish>\n\n<candidates>\n${sections.join("\n\n")}\n</candidates>`;
 }
 
 export function storyPrompt(input: { wish: string; keywords: string[]; direction: string; tier: StoryTier }) {

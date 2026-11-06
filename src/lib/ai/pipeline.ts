@@ -1,9 +1,10 @@
 import { setTimeout as sleep } from "node:timers/promises";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import type { Shortlist } from "../draw";
 import { TABOOS, type Analysis, type StoryTier } from "../scoring";
 import { anthropic, ANALYSIS_MODEL, estimateCost, mockMode, RefusalError, STORY_MODEL } from "./client";
-import { mockAnalysis, mockReview, mockStory } from "./mock";
+import { mockAnalysis, mockPicks, mockReview, mockStory } from "./mock";
 import { analysisPrompt, ANALYSIS_SYSTEM, REVIEW_SYSTEM, reviewPrompt, STORY_SYSTEM, storyPrompt } from "./prompts";
 
 const AnalysisSchema = z.object({
@@ -12,36 +13,34 @@ const AnalysisSchema = z.object({
   realism: z.number(),
   density: z.number(),
   narrative: z.number(),
-  keywords: z.array(z.string()),
+  picks: z.object({ loophole: z.array(z.number()), price: z.array(z.number()), ending: z.array(z.number()) }),
 });
 
 const ReviewSchema = z.object({ approved: z.boolean() });
 
 const clampScore = (value: number) => Math.min(100, Math.max(0, Math.round(value)));
 
-export async function analyzeWish(wish: string): Promise<{ analysis: Analysis; costUsd: number }> {
-  if (mockMode()) return { analysis: mockAnalysis(wish), costUsd: 0 };
+export async function analyzeWish(wish: string, shortlist: Shortlist) {
+  if (mockMode()) return { analysis: mockAnalysis(wish), picks: mockPicks(shortlist), costUsd: 0 };
 
   const response = await anthropic().messages.parse({
     model: ANALYSIS_MODEL,
     max_tokens: 2000,
     system: ANALYSIS_SYSTEM,
     output_config: { effort: "low", format: zodOutputFormat(AnalysisSchema) },
-    messages: [{ role: "user", content: analysisPrompt(wish) }],
+    messages: [{ role: "user", content: analysisPrompt(wish, shortlist) }],
   });
   if (response.stop_reason === "refusal" || !response.parsed_output) throw new RefusalError();
 
-  const result = response.parsed_output;
-  return {
-    analysis: {
-      ...result,
-      clarity: clampScore(result.clarity),
-      realism: clampScore(result.realism),
-      density: clampScore(result.density),
-      narrative: clampScore(result.narrative),
-    },
-    costUsd: estimateCost(ANALYSIS_MODEL, response.usage),
+  const { picks, ...result } = response.parsed_output;
+  const analysis: Analysis = {
+    ...result,
+    clarity: clampScore(result.clarity),
+    realism: clampScore(result.realism),
+    density: clampScore(result.density),
+    narrative: clampScore(result.narrative),
   };
+  return { analysis, picks, costUsd: estimateCost(ANALYSIS_MODEL, response.usage) };
 }
 
 type StoryInput = { wish: string; keywords: string[]; direction: string; tier: StoryTier };

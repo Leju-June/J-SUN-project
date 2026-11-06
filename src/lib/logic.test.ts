@@ -1,36 +1,71 @@
 import { describe, expect, it } from "vitest";
 import { matchAchievements } from "./achievements";
-import { drawKeywords, type Candidate } from "./draw";
+import { drawKeywords, sampleCandidates, type Keyword, type RecentUses, type Shortlist } from "./draw";
 import { hashWish, weekStartKst } from "./wish-text";
 
-const candidate = (id: number, slot: string, similarity: number, severity = 50): Candidate => ({
+const keyword = (id: number, slot: string, severity = 50, baseWeight = 1): Keyword => ({
   id,
   word: `단어${id}`,
+  description: "",
   slot,
-  baseWeight: 1,
+  baseWeight,
   severity,
-  similarity,
 });
+
+const shortlist = (lists: Partial<Shortlist>): Shortlist => ({ loophole: [], price: [], material: [], ending: [], ...lists });
+const noPicks = { loophole: [], price: [], ending: [] };
+const noUses: RecentUses = new Map();
 
 describe("키워드 추첨", () => {
   it("슬롯마다 하나씩 뽑는다", () => {
     const drawn = drawKeywords(
-      [candidate(1, "loophole", 0.5), candidate(2, "price", 0.5), candidate(3, "material", 0.1), candidate(4, "ending", 0.2)],
+      shortlist({ loophole: [keyword(1, "loophole")], price: [keyword(2, "price")], material: [keyword(3, "material")], ending: [keyword(4, "ending")] }),
+      noPicks,
       50,
+      noUses,
     );
-    expect(drawn.map((keyword) => keyword.slot)).toEqual(["loophole", "price", "material", "ending"]);
+    expect(drawn.map((item) => item.slot)).toEqual(["loophole", "price", "material", "ending"]);
   });
 
-  it("loophole 슬롯은 연관된 키워드가 더 자주 뽑힌다", () => {
-    const pool = [candidate(1, "loophole", 0.7), candidate(2, "loophole", 0)];
-    const drawn = Array.from({ length: 500 }, () => drawKeywords(pool, 50)[0].id);
-    expect(drawn.filter((id) => id === 1).length).toBeGreaterThan(450);
+  it("Haiku가 고른 후보 안에서만 뽑는다", () => {
+    const list = shortlist({ loophole: [keyword(1, "loophole"), keyword(2, "loophole"), keyword(3, "loophole")] });
+    const drawn = Array.from({ length: 200 }, () => drawKeywords(list, { ...noPicks, loophole: [2] }, 50, noUses)[0].id);
+    expect(new Set(drawn)).toEqual(new Set([2]));
+  });
+
+  it("없는 번호만 고르면 표본 전체에서 뽑는다", () => {
+    const list = shortlist({ loophole: [keyword(1, "loophole"), keyword(2, "loophole")] });
+    const drawn = Array.from({ length: 200 }, () => drawKeywords(list, { ...noPicks, loophole: [99] }, 50, noUses)[0].id);
+    expect(new Set(drawn)).toEqual(new Set([1, 2]));
+  });
+
+  it("최근 자주 나온 키워드는 덜 뽑힌다", () => {
+    const list = shortlist({ loophole: [keyword(1, "loophole"), keyword(2, "loophole")] });
+    const picks = { ...noPicks, loophole: [1, 2] };
+    const drawn = Array.from({ length: 1000 }, () => drawKeywords(list, picks, 50, new Map([[1, 10]]))[0].id);
+    expect(drawn.filter((id) => id === 2).length).toBeGreaterThan(750);
   });
 
   it("불행도가 높으면 강한 키워드가 더 자주 뽑힌다", () => {
-    const pool = [candidate(1, "price", 0.3, 10), candidate(2, "price", 0.3, 95)];
-    const drawn = Array.from({ length: 500 }, () => drawKeywords(pool, 95)[0].id);
+    const list = shortlist({ price: [keyword(1, "price", 10), keyword(2, "price", 95)] });
+    const drawn = Array.from({ length: 500 }, () => drawKeywords(list, { ...noPicks, price: [1, 2] }, 95, noUses)[0].id);
     expect(drawn.filter((id) => id === 2).length).toBeGreaterThan(400);
+  });
+});
+
+describe("후보 표본", () => {
+  const many = Array.from({ length: 500 }, (_, index) => keyword(index + 1, "loophole"));
+
+  it("키워드가 많아도 슬롯마다 12개만 중복 없이 고른다", () => {
+    const { loophole } = sampleCandidates(many, noUses);
+    expect(loophole).toHaveLength(12);
+    expect(new Set(loophole.map((item) => item.id)).size).toBe(12);
+  });
+
+  it("최근 자주 나온 키워드는 표본에도 덜 들어간다", () => {
+    const pool = [keyword(1, "loophole"), ...many.slice(1, 13)];
+    const hits = Array.from({ length: 500 }, () => sampleCandidates(pool, new Map([[1, 40]])).loophole.some((item) => item.id === 1));
+    expect(hits.filter(Boolean).length).toBeLessThan(250);
   });
 });
 
@@ -55,7 +90,7 @@ describe("업적", () => {
       text: "짧은 소원",
       score: 92,
       breakdown: {
-        analysis: { taboo: "none", clarity: 90, realism: 90, density: 90, narrative: 90, keywords: [] },
+        analysis: { taboo: "none", clarity: 90, realism: 90, density: 90, narrative: 90 },
         severityAverage: 20,
         misfortune: 10,
         quality: 90,

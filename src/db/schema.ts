@@ -17,7 +17,6 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
-  vector,
 } from "drizzle-orm/pg-core";
 import type { ScoreBreakdown } from "@/lib/scoring";
 
@@ -28,7 +27,6 @@ export const keywords = pgTable("keywords", {
   slot: text("slot").notNull(), // loophole | price | material | ending
   baseWeight: real("base_weight").notNull().default(1),
   severity: smallint("severity").notNull(),
-  embedding: vector("embedding", { dimensions: 384 }).notNull(),
 });
 
 export const users = pgTable("users", {
@@ -67,6 +65,7 @@ export const wishes = pgTable(
   },
   (t) => [
     index("wishes_ip_hash_idx").on(t.ip, t.wishHash),
+    index("wishes_created_at_idx").on(t.createdAt),
     // 동시에 같은 소원을 보내도 무료 사용자는 한 건만 들어간다.
     uniqueIndex("wishes_first_wish_idx")
       .on(t.ip, t.wishHash)
@@ -83,7 +82,6 @@ export const wishKeywords = pgTable(
     keywordId: bigint("keyword_id", { mode: "number" })
       .notNull()
       .references(() => keywords.id),
-    similarity: real("similarity").notNull(),
   },
   (t) => [primaryKey({ columns: [t.wishId, t.keywordId] })],
 );

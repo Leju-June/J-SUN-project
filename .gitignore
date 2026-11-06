@@ -12,5 +12,4 @@ next-env.d.ts
 
 # 로컬 환경
 .venv/
-models/
 .claude/

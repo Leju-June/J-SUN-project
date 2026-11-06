@@ -14,7 +14,6 @@ CREATE TABLE "keywords" (
 	"slot" text NOT NULL,
 	"base_weight" real DEFAULT 1 NOT NULL,
 	"severity" smallint NOT NULL,
-	"embedding" vector(384) NOT NULL,
 	CONSTRAINT "keywords_word_unique" UNIQUE("word")
 );
 --> statement-breakpoint
@@ -36,7 +35,6 @@ CREATE TABLE "users" (
 CREATE TABLE "wish_keywords" (
 	"wish_id" uuid NOT NULL,
 	"keyword_id" bigint NOT NULL,
-	"similarity" real NOT NULL,
 	CONSTRAINT "wish_keywords_wish_id_keyword_id_pk" PRIMARY KEY("wish_id","keyword_id")
 );
 --> statement-breakpoint

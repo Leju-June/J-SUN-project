@@ -1,3 +1,4 @@
+import { JUDGED_SLOTS, type Picks, type Shortlist } from "../draw";
 import { SCENE_DELIMITER } from "../scenes";
 import type { Analysis, StoryTier, Taboo } from "../scoring";
 
@@ -19,8 +20,11 @@ export function mockAnalysis(wish: string): Analysis {
     realism: /날|불사|영원|순간이동|투명/.test(wish) ? 10 : 55,
     density: Math.min(90, 35 + conditions * 20),
     narrative: 55,
-    keywords: wish.split(/\s+/).slice(0, 4),
   };
+}
+
+export function mockPicks(shortlist: Shortlist) {
+  return Object.fromEntries(JUDGED_SLOTS.map((slot) => [slot, shortlist[slot].slice(0, 3).map((keyword) => keyword.id)])) as Picks;
 }
 
 export function mockStory(wish: string, keywords: string[], tier: StoryTier) {

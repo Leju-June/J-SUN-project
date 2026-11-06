@@ -7,7 +7,6 @@ export type Analysis = {
   realism: number; // R: 얼마나 현실적인가
   density: number; // D: 낭비 없이 의미 있는 조건을 담았는가
   narrative: number; // N: 이야기로 풀어낼 거리가 있는가
-  keywords: string[]; // 소원에서 뽑은 확정 키워드
 };
 
 export type StoryTier = { name: "short" | "medium" | "long"; minChars: number; maxChars: number; minScenes: number; maxScenes: number };

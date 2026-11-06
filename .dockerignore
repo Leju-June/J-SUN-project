@@ -5,5 +5,4 @@
 .claude
 .env
 .env.local
-models
 node_modules

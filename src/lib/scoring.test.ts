@@ -7,7 +7,6 @@ const wish = (overrides: Partial<Analysis>): Analysis => ({
   realism: 50,
   density: 50,
   narrative: 50,
-  keywords: [],
   ...overrides,
 });
 

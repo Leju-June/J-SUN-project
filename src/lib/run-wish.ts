@@ -1,12 +1,11 @@
-import { and, eq, ne, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { keywords, wishes, wishKeywords } from "@/db/schema";
 import { RefusalError, mockMode } from "./ai/client";
 import { analyzeWish, generateStory } from "./ai/pipeline";
 import { matchAchievements } from "./achievements";
-import { drawKeywords, type Candidate } from "./draw";
+import { drawKeywords, sampleCandidates, type RecentUses } from "./draw";
 import { earnedAchievements } from "./earned-achievements";
-import { embed } from "./embedding";
 import { releaseQuota, reserveQuota, spentTodayUsd } from "./quota";
 import { SceneSplitter } from "./scenes";
 import {
@@ -30,18 +29,17 @@ export type WishEvent =
 
 const DAILY_LIMIT_USD = Number(process.env.DAILY_SPEND_LIMIT_USD ?? 20);
 
-async function loadCandidates(wish: string): Promise<Candidate[]> {
-  const vector = `[${(await embed(wish)).join(",")}]`;
-  return db
-    .select({
-      id: keywords.id,
-      word: keywords.word,
-      slot: keywords.slot,
-      baseWeight: keywords.baseWeight,
-      severity: keywords.severity,
-      similarity: sql<number>`1 - (${keywords.embedding} <=> ${vector}::vector)`,
-    })
-    .from(keywords);
+const RECENT_WISHES = 100;
+
+/** 최근 소원들에 나온 키워드별 횟수. 같은 키워드만 반복되는 쏠림을 막는 데 쓴다. */
+async function recentKeywordUses(): Promise<RecentUses> {
+  const recent = db.select({ id: wishes.id }).from(wishes).orderBy(desc(wishes.createdAt)).limit(RECENT_WISHES);
+  const rows = await db
+    .select({ id: wishKeywords.keywordId, uses: sql<number>`count(*)::int` })
+    .from(wishKeywords)
+    .where(inArray(wishKeywords.wishId, recent))
+    .groupBy(wishKeywords.keywordId);
+  return new Map(rows.map(({ id, uses }) => [id, uses]));
 }
 
 /**
@@ -85,8 +83,10 @@ export async function runWish(text: string, ip: string, emit: (event: WishEvent)
   emit({ type: "start", id: wish.id, remaining, mock: mockMode() });
 
   try {
-    const { analysis, costUsd: analysisCost } = await analyzeWish(text);
-    const drawn = drawKeywords(await loadCandidates(text), misfortuneBeforeKeywords(analysis));
+    const [catalog, recentUses] = await Promise.all([db.select().from(keywords), recentKeywordUses()]);
+    const shortlist = sampleCandidates(catalog, recentUses);
+    const { analysis, picks, costUsd: analysisCost } = await analyzeWish(text, shortlist);
+    const drawn = drawKeywords(shortlist, picks, misfortuneBeforeKeywords(analysis), recentUses);
     const severityAverage = drawn.reduce((sum, keyword) => sum + keyword.severity, 0) / Math.max(drawn.length, 1);
 
     const misfortune = computeMisfortune(analysis, severityAverage);
@@ -118,7 +118,7 @@ export async function runWish(text: string, ip: string, emit: (event: WishEvent)
       })
       .where(eq(wishes.id, wish.id));
     if (drawn.length > 0) {
-      await db.insert(wishKeywords).values(drawn.map((keyword) => ({ wishId: wish.id, keywordId: keyword.id, similarity: keyword.similarity })));
+      await db.insert(wishKeywords).values(drawn.map((keyword) => ({ wishId: wish.id, keywordId: keyword.id })));
     }
 
     const achievements = matchAchievements({ text, score, breakdown }).filter(({ code }) => !earnedBefore.has(code));
