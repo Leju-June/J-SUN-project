@@ -61,7 +61,7 @@ export async function generateStory(input: StoryInput, onText: (text: string) =>
     max_tokens: 16000,
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
-    output_config: { effort: "medium" },
+    output_config: { effort: "low" },
     system: [{ type: "text", text: STORY_SYSTEM, cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: storyPrompt(input) }],
   });

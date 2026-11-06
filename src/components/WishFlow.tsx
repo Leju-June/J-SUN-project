@@ -9,6 +9,12 @@ import { useTypewriter } from "./Typewriter";
 
 const INTRO = "너의 소원을 말해봐. 내가 모두 이루어줄게.";
 const MAX_LENGTH = 200;
+const WAITING_LINES = [
+  "지니가 소원을 곱씹는 중...",
+  "한 글자씩 뜯어보는 중...",
+  "빈틈을 찾았다. 지니가 웃는다...",
+  "램프의 연기가 이야기가 되는 중...",
+];
 
 const STOP_MESSAGES: Record<string, string> = {
   busy: "그 소원은 이미 듣고 있다. 잠시 후 다시 빌어봐.",
@@ -20,6 +26,23 @@ const STOP_MESSAGES: Record<string, string> = {
 
 type Result = { score: number; line: string; achievements: { code: string; title: string }[] };
 type Stage = "ask" | "waiting" | "story";
+
+function WaitingBox() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setIndex((current) => Math.min(current + 1, WAITING_LINES.length - 1)), 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="box">
+      <p className="waiting" aria-live="polite">
+        {WAITING_LINES[index]}
+      </p>
+    </div>
+  );
+}
 
 export function WishFlow() {
   const [stage, setStage] = useState<Stage>("ask");
@@ -148,13 +171,7 @@ export function WishFlow() {
     }
   };
 
-  if (stage === "waiting") {
-    return (
-      <div className="box">
-        <p className="waiting">지니가 소원을 곱씹는 중...</p>
-      </div>
-    );
-  }
+  if (stage === "waiting") return <WaitingBox />;
 
   if (stage === "story") {
     const ending = result && (
