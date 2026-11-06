@@ -2,7 +2,7 @@ import type { ScoreBreakdown } from "./scoring";
 
 export type AchievementContext = { text: string; score: number; breakdown: ScoreBreakdown };
 
-const ACHIEVEMENTS = [
+export const ACHIEVEMENTS = [
   { code: "first_wish", title: "첫 번째 소원", test: () => true },
   { code: "taboo_breaker", title: "금기를 건드린 자", test: (c: AchievementContext) => c.breakdown.analysis.taboo !== "none" },
   { code: "genie_sweat", title: "지니를 긴장시킨 자", test: (c: AchievementContext) => c.score >= 90 },

@@ -5,6 +5,7 @@ import { RefusalError, mockMode } from "./ai/client";
 import { analyzeWish, generateStory } from "./ai/pipeline";
 import { matchAchievements } from "./achievements";
 import { drawKeywords, type Candidate } from "./draw";
+import { earnedAchievements } from "./earned-achievements";
 import { embed } from "./embedding";
 import { releaseQuota, reserveQuota, spentTodayUsd } from "./quota";
 import { SceneSplitter } from "./scenes";
@@ -104,6 +105,7 @@ export async function runWish(text: string, ip: string, emit: (event: WishEvent)
 
     const score = computeScore(misfortune, quality);
     const breakdown: ScoreBreakdown = { analysis, severityAverage, misfortune, quality, tier: tier.name };
+    const earnedBefore = await earnedAchievements(ip);
 
     await db
       .update(wishes)
@@ -119,7 +121,8 @@ export async function runWish(text: string, ip: string, emit: (event: WishEvent)
       await db.insert(wishKeywords).values(drawn.map((keyword) => ({ wishId: wish.id, keywordId: keyword.id, similarity: keyword.similarity })));
     }
 
-    emit({ type: "done", score, line: genieLine(score), achievements: matchAchievements({ text, score, breakdown }) });
+    const achievements = matchAchievements({ text, score, breakdown }).filter(({ code }) => !earnedBefore.has(code));
+    emit({ type: "done", score, line: genieLine(score), achievements });
   } catch (error) {
     await db.update(wishes).set({ status: "failed" }).where(eq(wishes.id, wish.id));
     await releaseQuota(ip);

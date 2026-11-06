@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { WishEvent } from "@/lib/run-wish";
+import { Frame } from "./Frame";
 import { ScoreCard } from "./ScoreCard";
 import { StoryViewer } from "./StoryViewer";
 import { useTypewriter } from "./Typewriter";
+import { notifyChanged } from "./useLiveData";
 
 const INTRO = "너의 소원을 말해봐. 내가 모두 이루어줄게.";
 const MAX_LENGTH = 200;
@@ -36,11 +38,11 @@ function WaitingBox() {
   }, []);
 
   return (
-    <div className="box">
+    <Frame title="지니의 램프">
       <p className="waiting" aria-live="polite">
         {WAITING_LINES[index]}
       </p>
-    </div>
+    </Frame>
   );
 }
 
@@ -93,6 +95,7 @@ export function WishFlow() {
       case "done":
         setComplete(true);
         setResult({ score: event.score, line: event.line, achievements: event.achievements });
+        notifyChanged();
         break;
       case "duplicate":
         setWishId(event.id);
@@ -166,6 +169,7 @@ export function WishFlow() {
     if (data?.status === "approved" && data.slug) {
       setShareSlug(data.slug);
       setShareState("idle");
+      notifyChanged();
     } else {
       setShareState("rejected");
     }
@@ -216,8 +220,8 @@ export function WishFlow() {
   const noneLeft = quota?.remaining === 0;
 
   return (
-    <div className="box">
-      <p className="prompt-line">
+    <Frame title="지니의 램프">
+      <p className="prompt-line" data-typed>
         {intro.visible}
         {!intro.finished && <span className="cursor" aria-hidden />}
       </p>
@@ -250,6 +254,6 @@ export function WishFlow() {
         </form>
       )}
       {message && <p className="notice">{message}</p>}
-    </div>
+    </Frame>
   );
 }

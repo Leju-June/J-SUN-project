@@ -7,7 +7,57 @@
   --muted: #a99bc9;
   --gold: #e8bd5f;
   --danger: #e2716f;
+  --accent: #e8bd5f;
+  --well: #0d0719;
+  --hover: rgb(232 189 95 / 12%);
+  --glow: 0 0 40px rgb(232 189 95 / 8%);
+  --radius: 12px;
+  --font-body: var(--font-serif), serif;
+  --box-size: 18px;
   color-scheme: dark;
+}
+
+/* 테마는 위 토큰을 덮어쓰고, 고유한 모양은 파일 끝의 테마 구역에 둔다. */
+html[data-theme="terminal"] {
+  --bg: #000;
+  --bg-glow: #000;
+  --box: #000;
+  --line: #c6c6c6;
+  --text: #e4e4e4;
+  --muted: #8c8c8c;
+  --gold: #ffff55;
+  --danger: #ff5555;
+  --accent: #55ffff;
+  --well: #222;
+  --hover: #333;
+  --glow: none;
+  --radius: 0px;
+  --font-body: var(--font-pixel), monospace;
+  --box-size: 16px;
+}
+
+html[data-theme="fairytale"] {
+  --bg: #101c4f;
+  --bg-glow: #101c4f;
+  --box: rgb(8 14 42 / 70%);
+  --line: var(--neon);
+  --text: #fffdf3;
+  --muted: #c4d7f5;
+  --gold: var(--neon);
+  --danger: #ffb4a8;
+  --accent: var(--neon);
+  --well: rgb(9 22 66 / 55%);
+  --hover: rgb(255 255 255 / 14%);
+  --glow: none;
+  --radius: 10px;
+  --neon: #63bcff;
+  --scarf: #f8f2df;
+  --scarf-rib: #f1e8cf;
+  --scarf-shade: rgb(120 100 50 / 22%);
+  --ink: #14224d;
+  --ink-soft: #55607f;
+  --ink-accent: #2750a3;
+  --ink-warm: #7a4d00;
 }
 
 * {
@@ -16,14 +66,16 @@
 
 html,
 body {
+  height: 100%;
   margin: 0;
-  min-height: 100%;
+  overflow: hidden;
 }
 
 body {
   background: radial-gradient(ellipse at 50% 0%, var(--bg-glow), var(--bg) 65%) fixed;
   background-color: var(--bg);
   color: var(--text);
+  font-family: var(--font-body);
   line-height: 1.8;
 }
 
@@ -37,28 +89,70 @@ input {
   color: inherit;
 }
 
+.shell {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(0, 760px) minmax(220px, 1fr);
+  height: 100vh;
+  height: 100dvh;
+}
+
+html[data-booting] .shell {
+  visibility: hidden;
+  /* 스크립트가 실패해도 화면이 영영 숨겨지지 않게 한다. */
+  animation: unboot 0s 3s forwards;
+}
+
+@keyframes unboot {
+  to {
+    visibility: visible;
+  }
+}
+
+.scene {
+  display: none;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 12px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.side .box {
+  flex: none;
+  font-size: 15px;
+}
+
+.side .box.fill {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 0 16px 16px;
+}
+
 .top {
   display: flex;
+  flex: none;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 16px;
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 16px;
+  padding: 12px 0;
 }
 
-.top nav {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 16px;
-  font-size: 14px;
-  color: var(--muted);
-}
-
-.top nav a {
-  text-decoration: none;
+.drawer-toggle,
+.backdrop {
+  display: none;
 }
 
 .brand {
@@ -68,25 +162,121 @@ input {
   text-decoration: none;
 }
 
+.panel-line {
+  margin: 0;
+}
+
+.panel-link {
+  color: var(--accent);
+}
+
+.panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.panel-list .earned {
+  color: var(--gold);
+}
+
+.panel-list .locked {
+  color: var(--muted);
+}
+
+.theme-option {
+  text-align: left;
+}
+
+.theme-option[aria-pressed="true"] {
+  color: var(--gold);
+}
+
+.shared-list {
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.shared-list a {
+  display: block;
+  text-decoration: none;
+}
+
+.shared-list a:hover .shared-text {
+  color: var(--accent);
+}
+
+.shared-score {
+  display: block;
+  color: var(--gold);
+}
+
+.shared-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+
 main {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 24px 16px 64px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+main > * {
+  flex-shrink: 0;
 }
 
 .box {
   position: relative;
-  min-height: 300px;
-  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   background: var(--box);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: 0 0 40px rgb(232 189 95 / 8%);
-  font-size: 18px;
+  border-radius: var(--radius);
+  box-shadow: var(--glow);
+  font-size: var(--box-size);
+}
+
+main > .box {
+  flex: 1 1 0;
+}
+
+.frame-title {
+  flex: none;
+  padding: 12px 20px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.frame-body {
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.side .frame-body {
+  padding: 8px 20px 14px;
+}
+
+.edge {
+  display: none;
 }
 
 .story-text {
-  min-height: 220px;
   white-space: pre-wrap;
   word-break: keep-all;
   overflow-wrap: anywhere;
@@ -111,6 +301,7 @@ main {
 
 .prompt-line {
   min-height: 2em;
+  margin-top: 0;
 }
 
 .wish-form {
@@ -158,7 +349,7 @@ main {
   padding: 8px 18px;
   background: transparent;
   border: 1px solid var(--gold);
-  border-radius: 8px;
+  border-radius: min(var(--radius), 8px);
   color: var(--gold);
   cursor: pointer;
   text-decoration: none;
@@ -166,7 +357,7 @@ main {
 }
 
 .button:hover:not(:disabled) {
-  background: rgb(232 189 95 / 12%);
+  background: var(--hover);
 }
 
 .button:disabled {
@@ -190,10 +381,11 @@ main {
 
 .pager {
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .dots {
@@ -215,6 +407,7 @@ main {
 }
 
 .waiting {
+  margin-top: 0;
   color: var(--muted);
   animation: breathe 1.8s ease-in-out infinite;
 }
@@ -239,9 +432,9 @@ main {
   height: 14px;
   margin: 12px 0 20px;
   overflow: hidden;
-  background: #0d0719;
+  background: var(--well);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: min(var(--radius), 8px);
 }
 
 .gauge > div {
@@ -278,7 +471,7 @@ main {
   padding: 16px;
   background: var(--box);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--radius);
 }
 
 .card a {
@@ -305,22 +498,602 @@ td {
 
 .field {
   padding: 6px 8px;
-  background: #0d0719;
+  background: var(--well);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: min(var(--radius), 8px);
+}
+
+/* 스마트폰: 양쪽 사이드바를 토글로 연다. */
+@media (max-width: 899px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .center {
+    padding: 0 12px 12px;
+  }
+
+  .top {
+    justify-content: space-between;
+  }
+
+  .drawer-toggle {
+    display: block;
+    padding: 4px 0;
+    color: var(--accent);
+  }
+
+  .side {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    z-index: 20;
+    width: min(84vw, 320px);
+    background: var(--bg);
+    visibility: hidden;
+    transition: transform 0.2s ease-out, visibility 0.2s;
+  }
+
+  .side-left {
+    left: 0;
+    transform: translateX(-100%);
+  }
+
+  .side-right {
+    right: 0;
+    transform: translateX(100%);
+  }
+
+  .side.open {
+    transform: none;
+    visibility: visible;
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    padding: 0;
+    background: rgb(0 0 0 / 60%);
+    border: 0;
+  }
+
+  .frame-body {
+    padding: 16px;
+  }
+
+  .box {
+    font-size: min(var(--box-size), 16px);
+  }
+}
+
+/* 터미널 테마: 상자를 글자로 그리고 화면 전체를 타이핑하듯 드러낸다. */
+::highlight(typing-hidden) {
+  color: transparent;
+}
+
+::highlight(typing-caret) {
+  background-color: var(--text);
+  color: transparent;
+}
+
+html[data-theme="terminal"] {
+  -webkit-font-smoothing: none;
+}
+
+html[data-theme="terminal"] body {
+  line-height: 1.5;
+}
+
+html[data-theme="terminal"] .box,
+html[data-theme="terminal"] .side .box {
+  border: 0;
+  font-size: 16px;
+}
+
+html[data-theme="terminal"] .edge {
+  display: block;
+  position: absolute;
+  color: var(--line);
+  line-height: 1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+html[data-theme="terminal"] .edge-row {
+  display: flex;
+  left: 0;
+  right: 0;
+  height: 1em;
+  animation: draw-across 0.45s steps(24) both;
+}
+
+html[data-theme="terminal"] .edge-top {
+  top: 0;
+}
+
+html[data-theme="terminal"] .edge-bottom {
+  bottom: 0;
+  animation-delay: 0.3s;
+}
+
+html[data-theme="terminal"] .edge-fill {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+html[data-theme="terminal"] .edge-side {
+  top: 1em;
+  bottom: 1em;
+  width: 1ch;
+  white-space: normal;
+  word-break: break-all;
+  animation: draw-down 0.3s steps(12) 0.15s both;
+}
+
+html[data-theme="terminal"] .edge-left {
+  left: 0;
+}
+
+html[data-theme="terminal"] .edge-right {
+  right: 0;
+}
+
+@keyframes draw-across {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes draw-down {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+html[data-theme="terminal"] .frame-title {
+  position: absolute;
+  top: 0;
+  left: 3ch;
+  z-index: 1;
+  padding: 0 1ch;
+  background: var(--line);
+  color: #000;
+  font-size: 16px;
+  line-height: 1;
+}
+
+html[data-theme="terminal"] .frame-body {
+  margin: 1em 1ch;
+  padding: 10px 14px;
+}
+
+html[data-theme="terminal"] .side .frame-body {
+  padding: 6px 12px;
+}
+
+html[data-theme="terminal"] .brand {
+  padding: 0 2ch;
+  background: var(--line);
+  color: #000;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+html[data-theme="terminal"] .button {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--accent);
+}
+
+html[data-theme="terminal"] .button::before {
+  content: "[ ";
+}
+
+html[data-theme="terminal"] .button::after {
+  content: " ]";
+}
+
+html[data-theme="terminal"] .button:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+html[data-theme="terminal"] .button:disabled {
+  color: var(--muted);
+}
+
+html[data-theme="terminal"] .wish-input {
+  color: var(--gold);
+  caret-color: var(--gold);
+  border-bottom-style: dashed;
+}
+
+html[data-theme="terminal"] .notice,
+html[data-theme="terminal"] .wish-meta,
+html[data-theme="terminal"] .chip,
+html[data-theme="terminal"] table {
+  font-size: 16px;
+}
+
+html[data-theme="terminal"] .cursor {
+  width: 1ch;
+  background: var(--text);
+}
+
+html[data-theme="terminal"] .waiting {
+  color: #55ff55;
+  animation: none;
+}
+
+html[data-theme="terminal"] .dot {
+  border-radius: 0;
+}
+
+html[data-theme="terminal"] .score-value {
+  font-size: 32px;
+  font-weight: 400;
+}
+
+html[data-theme="terminal"] .gauge {
+  height: 16px;
+  border: 0;
+}
+
+html[data-theme="terminal"] .gauge > div {
+  background: repeating-linear-gradient(90deg, #55ff55 0 6px, transparent 6px 8px);
+  transition-timing-function: steps(24);
+}
+
+html[data-theme="terminal"] .chip {
+  padding: 0;
+  border: 0;
+}
+
+html[data-theme="terminal"] .chip::before {
+  content: "* ";
+}
+
+html[data-theme="terminal"] h1,
+html[data-theme="terminal"] h2 {
+  color: var(--gold);
+  font-size: 16px;
+  font-weight: 400;
+}
+
+html[data-theme="terminal"] .card {
+  margin-bottom: 8px;
+  padding: 0;
+  border: 0;
+}
+
+html[data-theme="terminal"] .field {
+  border-style: dashed;
+}
+
+/* 밤하늘 테마: 목도리가 시야를 감싸고, 위쪽 밤하늘에는 별똥별이 계속 떨어진다. */
+html[data-theme="fairytale"] .scene {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.scene-sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: #fff6d8;
+}
+
+.scene-moon {
+  position: absolute;
+  top: 26px;
+  left: calc(50% - 240px);
+  width: 62px;
+  height: 62px;
+  background: #ffe9a8;
+  border-radius: 50%;
+}
+
+.meteor {
+  position: absolute;
+  width: 130px;
+  height: 2px;
+  background: linear-gradient(90deg, #fffdf3, rgb(255 253 243 / 0%));
+  opacity: 0;
+  animation: meteor 9s linear infinite;
+}
+
+.meteor-1 {
+  top: 2px;
+  left: 66%;
+  animation-delay: 2.4s;
+}
+
+.meteor-2 {
+  top: -6px;
+  left: 92%;
+  animation-delay: 5.4s;
+}
+
+.meteor-3 {
+  top: 10px;
+  left: 46%;
+  animation-delay: 7.8s;
+}
+
+@keyframes meteor {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(-19.6deg);
+  }
+  2% {
+    opacity: 1;
+  }
+  13% {
+    opacity: 1;
+  }
+  16%,
+  100% {
+    opacity: 0;
+    transform: translate(-480px, 171px) rotate(-19.6deg);
+  }
+}
+
+.scarf {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  will-change: transform;
+}
+
+.scarf-cloth {
+  fill: var(--scarf);
+}
+
+.scarf-ribs {
+  fill: none;
+  stroke: var(--scarf-rib);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 8 7;
+}
+
+.scarf-shade {
+  fill: none;
+  stroke: var(--scarf-shade);
+  stroke-width: 12;
+  transform: translateY(-3px);
+}
+
+/* 맨 위 겹은 하늘과 맞닿아 그림자가 필요 없다. */
+.scarf-back .scarf-shade {
+  display: none;
+}
+
+.scarf-tassels {
+  fill: none;
+  stroke: var(--scarf-rib);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+/* 목도리가 감기는 동안 글자와 상자를 숨겼다가 끝나면 띄운다. */
+html[data-opening] .side > *,
+html[data-opening] main {
+  opacity: 0;
+  transform: translateY(32px);
+  /* 스크립트가 실패해도 화면이 영영 숨겨지지 않게 한다. */
+  animation: opening-fallback 0s 6s forwards;
+}
+
+@keyframes opening-fallback {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html[data-theme="fairytale"] .top {
+  height: 112px;
+  padding: 0;
+}
+
+html[data-theme="fairytale"] .brand {
+  color: var(--scarf);
+  font-family: var(--font-script), cursive;
+  font-size: 58px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+html[data-theme="fairytale"] .side {
+  --text: var(--ink);
+  --muted: var(--ink-soft);
+  --gold: var(--ink-warm);
+  --accent: var(--ink-accent);
+  --line: var(--ink-soft);
+  gap: 4px;
+  padding: 84px 20px 20px;
+  color: var(--text);
+}
+
+html[data-theme="fairytale"] .side > *,
+html[data-theme="fairytale"] main {
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+}
+
+html[data-theme="fairytale"] .side .box {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  font-size: 16px;
+}
+
+html[data-theme="fairytale"] .side .frame-title {
+  padding: 0;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+html[data-theme="fairytale"] .side .frame-body {
+  padding: 4px 0 12px;
+}
+
+html[data-theme="fairytale"] main {
+  --text: var(--ink);
+  --muted: var(--ink-soft);
+  --gold: var(--ink-warm);
+  --accent: var(--ink-accent);
+  --line: var(--ink-soft);
+  /* 네온 빛이 스크롤 영역에 잘리지 않게 여백을 둔다. */
+  margin: 0 -14px -14px;
+  padding: 0 14px 14px;
+  color: var(--text);
+}
+
+html[data-theme="fairytale"] main .box,
+html[data-theme="fairytale"] main .card {
+  --text: #fffdf3;
+  --muted: #c4d7f5;
+  --gold: var(--neon);
+  --accent: var(--neon);
+  --line: var(--neon);
+  background: var(--box);
+  border: 1.5px solid var(--neon);
+  box-shadow:
+    0 0 5px rgb(99 188 255 / 90%),
+    0 0 18px rgb(99 188 255 / 45%),
+    inset 0 0 14px rgb(99 188 255 / 18%);
+  color: var(--text);
+  backdrop-filter: blur(4px);
+}
+
+/* 모서리를 더 밝게 강조한다. */
+html[data-theme="fairytale"] main .box::before,
+html[data-theme="fairytale"] main .box::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #d9f0ff;
+  filter: drop-shadow(0 0 4px var(--neon));
+  pointer-events: none;
+}
+
+html[data-theme="fairytale"] main .box::before {
+  top: -1.5px;
+  left: -1.5px;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: var(--radius);
+}
+
+html[data-theme="fairytale"] main .box::after {
+  right: -1.5px;
+  bottom: -1.5px;
+  border-top: 0;
+  border-left: 0;
+  border-bottom-right-radius: var(--radius);
+}
+
+html[data-theme="fairytale"] main .frame-title {
+  padding-top: 16px;
+  color: var(--neon);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-shadow: 0 0 8px rgb(99 188 255 / 85%);
+}
+
+html[data-theme="fairytale"] main .prompt-line,
+html[data-theme="fairytale"] main .wish-row label {
+  font-weight: 700;
+}
+
+html[data-theme="fairytale"] main .wish-row label,
+html[data-theme="fairytale"] main .score-value,
+html[data-theme="fairytale"] main .box .button {
+  text-shadow: 0 0 8px rgb(99 188 255 / 85%);
+}
+
+html[data-theme="fairytale"] main .box .button:not(:disabled) {
+  box-shadow: 0 0 6px rgb(99 188 255 / 70%), inset 0 0 6px rgb(99 188 255 / 25%);
+}
+
+html[data-theme="fairytale"] main .wish-input:focus {
+  border-bottom-color: var(--neon);
+  box-shadow: 0 1px 0 var(--neon);
+}
+
+@media (max-width: 899px) {
+  html[data-theme="fairytale"] .top {
+    height: 96px;
+    padding-bottom: 24px;
+  }
+
+  html[data-theme="fairytale"] .brand {
+    font-size: 44px;
+  }
+
+  html[data-theme="fairytale"] .drawer-toggle {
+    color: var(--scarf);
+  }
+
+  html[data-theme="fairytale"] .side {
+    padding-top: 28px;
+    background: var(--scarf);
+  }
+
+  .scene-moon {
+    top: 22px;
+    left: calc(50% + 62px);
+    width: 44px;
+    height: 44px;
+  }
 }
 
 @media (max-width: 480px) {
-  .box {
-    padding: 20px;
-    font-size: 16px;
+  .frame-body {
+    padding: 14px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .cursor,
-  .waiting {
+  .waiting,
+  html[data-theme="terminal"] .edge,
+  html[data-opening] main,
+  html[data-opening] .side > * {
     animation: none;
+  }
+
+  .meteor {
+    display: none;
+  }
+
+  .side {
+    transition: none;
   }
 
   .gauge > div {

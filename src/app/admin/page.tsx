@@ -1,4 +1,5 @@
 import { desc, eq } from "drizzle-orm";
+import { Frame } from "@/components/Frame";
 import { db } from "@/db";
 import { ipQuotas, wishes } from "@/db/schema";
 import { isAdmin } from "@/lib/admin-auth";
@@ -13,13 +14,12 @@ export default async function Admin() {
   if (!(await isAdmin())) {
     if (!process.env.ADMIN_SECRET) return <p className="notice">ADMIN_SECRET이 설정되지 않아 비활성화되어 있습니다.</p>;
     return (
-      <form action={loginAction} className="box">
-        <h1>관리자</h1>
-        <div className="wish-row">
+      <Frame title="관리자">
+        <form action={loginAction} className="wish-row">
           <input className="field" name="password" type="password" aria-label="관리자 비밀값" required />
           <button className="button">확인</button>
-        </div>
-      </form>
+        </form>
+      </Frame>
     );
   }
 
