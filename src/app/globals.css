@@ -42,7 +42,7 @@ html[data-theme="fairytale"] {
   --box: rgb(8 14 42 / 70%);
   --line: var(--neon);
   --text: #fffdf3;
-  --muted: #c4d7f5;
+  --muted: #eef4ff;
   --gold: var(--neon);
   --danger: #ffb4a8;
   --accent: var(--neon);
@@ -50,14 +50,14 @@ html[data-theme="fairytale"] {
   --hover: rgb(255 255 255 / 14%);
   --glow: none;
   --radius: 10px;
-  --neon: #63bcff;
+  --neon: #9ad8ff;
   --scarf: #f8f2df;
-  --scarf-rib: #f1e8cf;
+  --scarf-rib: #f5eedb;
   --scarf-shade: rgb(120 100 50 / 22%);
-  --ink: #14224d;
-  --ink-soft: #55607f;
-  --ink-accent: #2750a3;
-  --ink-warm: #7a4d00;
+  --ink: #0b1433;
+  --ink-soft: #333c5c;
+  --ink-accent: #123a8c;
+  --ink-warm: #5c3700;
 }
 
 * {
@@ -948,6 +948,20 @@ html[data-theme="fairytale"] .side .box {
   font-size: 16px;
 }
 
+html[data-theme="fairytale"] .side,
+html[data-theme="fairytale"] main > :not(.box) {
+  font-weight: 700;
+}
+
+html[data-theme="fairytale"] main .notice,
+html[data-theme="fairytale"] main .wish-meta {
+  font-size: 15px;
+}
+
+html[data-theme="fairytale"] main .box {
+  text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
+}
+
 html[data-theme="fairytale"] .side .frame-title {
   padding: 0;
   color: var(--ink);
@@ -974,7 +988,7 @@ html[data-theme="fairytale"] main {
 html[data-theme="fairytale"] main .box,
 html[data-theme="fairytale"] main .card {
   --text: #fffdf3;
-  --muted: #c4d7f5;
+  --muted: #eef4ff;
   --gold: var(--neon);
   --accent: var(--neon);
   --line: var(--neon);
