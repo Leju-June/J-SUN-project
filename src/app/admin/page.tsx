@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { Frame } from "@/components/Frame";
 import { db } from "@/db";
 import { ipQuotas, wishes } from "@/db/schema";
@@ -24,7 +24,7 @@ export default async function Admin() {
   }
 
   const week = weekStartKst();
-  const [quotas, shared, spent] = await Promise.all([
+  const [quotas, shared, spent, [weekly]] = await Promise.all([
     db.select().from(ipQuotas).orderBy(desc(ipQuotas.updatedAt)).limit(200),
     db
       .select({ id: wishes.id, text: wishes.text, score: wishes.score, slug: wishes.shareSlug })
@@ -33,12 +33,19 @@ export default async function Admin() {
       .orderBy(desc(wishes.createdAt))
       .limit(50),
     spentTodayUsd(),
+    db
+      .select({ count: sql<number>`count(*)::int`, average: sql<number | null>`avg(${wishes.score})::float8` })
+      .from(wishes)
+      .where(and(eq(wishes.status, "done"), gte(wishes.createdAt, new Date(`${week}T00:00:00+09:00`)))),
   ]);
 
   return (
     <>
       <h1>관리자</h1>
-      <p className="notice">최근 24시간 추정 지출 ${spent.toFixed(2)}</p>
+      <p className="notice">
+        최근 24시간 추정 지출 ${spent.toFixed(2)} · 이번 주 소원 {weekly.count}개
+        {weekly.average !== null && ` · 평균 ${weekly.average.toFixed(1)}점`}
+      </p>
 
       <h2>IP 사용량</h2>
       <div className="table-wrap">

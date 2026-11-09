@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { WishEvent } from "@/lib/run-wish";
 import { Frame } from "./Frame";
 import { ScoreCard } from "./ScoreCard";
+import { ShareActions } from "./ShareActions";
 import { StoryViewer } from "./StoryViewer";
 import { useTypewriter } from "./Typewriter";
 import { notifyChanged } from "./useLiveData";
@@ -16,6 +17,15 @@ const WAITING_LINES = [
   "한 글자씩 뜯어보는 중...",
   "빈틈을 찾았다. 지니가 웃는다...",
   "램프의 연기가 이야기가 되는 중...",
+];
+
+// 처음 온 사람이 어떤 식으로 빌면 되는지 감을 잡도록 입력란에 하나씩 보여준다.
+const EXAMPLES = [
+  "내일 아침 눈을 뜨면 세금을 다 낸 10억 원이 내 통장에 있게 해줘",
+  "우리 집 고양이가 사람 말을 하게 해줘",
+  "아무도 다치지 않고 하늘을 날 수 있게 해줘",
+  "평생 아무리 먹어도 살이 찌지 않게 해줘",
+  "다음 주 시험 범위를 전부 완벽하게 기억하게 해줘",
 ];
 
 const STOP_MESSAGES: Record<string, string> = {
@@ -54,11 +64,11 @@ export function WishFlow() {
   const [result, setResult] = useState<Result | null>(null);
   const [wishId, setWishId] = useState<string | null>(null);
   const [shareSlug, setShareSlug] = useState<string | null>(null);
-  const [shareState, setShareState] = useState<"idle" | "checking" | "rejected">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [replayed, setReplayed] = useState(false);
   const [mock, setMock] = useState(false);
   const [quota, setQuota] = useState<{ remaining: number; allowance: number } | null>(null);
+  const [example] = useState(() => EXAMPLES[Math.floor(Math.random() * EXAMPLES.length)]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const intro = useTypewriter(stage === "ask" ? INTRO : "", false);
@@ -125,7 +135,6 @@ export function WishFlow() {
     setResult(null);
     setWishId(null);
     setShareSlug(null);
-    setShareState("idle");
     setReplayed(false);
     setStage("waiting");
 
@@ -161,20 +170,6 @@ export function WishFlow() {
     refreshQuota();
   };
 
-  const share = async () => {
-    if (!wishId) return;
-    setShareState("checking");
-    const response = await fetch(`/api/wishes/${wishId}/share`, { method: "POST" });
-    const data = (await response.json().catch(() => null)) as { status?: string; slug?: string | null } | null;
-    if (data?.status === "approved" && data.slug) {
-      setShareSlug(data.slug);
-      setShareState("idle");
-      notifyChanged();
-    } else {
-      setShareState("rejected");
-    }
-  };
-
   if (stage === "waiting") return <WaitingBox />;
 
   if (stage === "story") {
@@ -195,17 +190,8 @@ export function WishFlow() {
           <button type="button" className="button" onClick={reset}>
             새 소원 빌기
           </button>
-          {shareSlug ? (
-            <Link className="button" href={`/w/${shareSlug}`}>
-              공유 페이지 열기
-            </Link>
-          ) : (
-            <button type="button" className="button" onClick={share} disabled={shareState !== "idle"}>
-              {shareState === "checking" ? "검사 중..." : "공유하기"}
-            </button>
-          )}
+          <ShareActions key={wishId} wishId={wishId} slug={shareSlug} />
         </div>
-        {shareState === "rejected" && <p className="notice">실존 인물을 특정할 수 있어 공유할 수 없다.</p>}
       </div>
     );
 
@@ -236,6 +222,7 @@ export function WishFlow() {
               value={text}
               maxLength={MAX_LENGTH}
               autoComplete="off"
+              placeholder={`예: ${example}`}
               disabled={noneLeft}
               onChange={(event) => setText(event.target.value)}
             />
@@ -254,6 +241,11 @@ export function WishFlow() {
         </form>
       )}
       {message && <p className="notice">{message}</p>}
+      {intro.finished && (
+        <p className="notice">
+          처음이라면 <Link href="/rules">지니의 규칙</Link>부터 읽어봐.
+        </p>
+      )}
     </Frame>
   );
 }

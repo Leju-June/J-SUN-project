@@ -23,5 +23,7 @@ export function useTypewriter(text: string, instant = false) {
     return () => clearTimeout(timer);
   }, [shown, total, instant]);
 
-  return { visible: text.slice(0, shown), finished: shown >= total, reveal: () => setShown(total), restart: () => setShown(0) };
+  // 바로 표시할 때는 shown 상태와 상관없이 전부 보여준다. 장면을 바꾸며 restart가 같이 불려도 비지 않게 한다.
+  const end = instant ? total : shown;
+  return { visible: text.slice(0, end), finished: end >= total, reveal: () => setShown(total), restart: () => setShown(0) };
 }

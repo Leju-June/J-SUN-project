@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { DEFAULT_THEME, isTheme, saveTheme, themeRender, type ThemeId } from "@/lib/themes";
+import { DEFAULT_THEME, isTheme, saveTheme, themeColor, themeRender, type ThemeId } from "@/lib/themes";
 import { startTypingRender } from "@/lib/typing-render";
 import { PersonalPanel } from "./PersonalPanel";
 import { SharedPanel } from "./SharedPanel";
@@ -28,6 +28,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (!theme) return;
     const root = document.documentElement;
     root.dataset.theme = theme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor(theme) ?? "");
     const stop =
       themeRender(theme) === "typing" && personal.current && shared.current && center.current
         ? startTypingRender([personal.current, shared.current, center.current])
@@ -63,7 +64,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="shell">
-      <ThemeScene active={theme !== null && themeRender(theme) === "scene"} onOpened={onOpened} />
+      <ThemeScene theme={theme} active={theme !== null && themeRender(theme) === "scene"} onOpened={onOpened} />
       <aside ref={personal} id="personal-panel" className={drawer === "personal" ? "side side-left open" : "side side-left"} data-render-region>
         <PersonalPanel theme={theme} onThemeChange={changeTheme} />
       </aside>

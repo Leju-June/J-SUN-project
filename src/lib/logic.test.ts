@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { matchAchievements } from "./achievements";
+import { earnedCodes, type AchievementRecord } from "./achievements";
 import { drawKeywords, sampleCandidates, type Keyword, type RecentUses, type Shortlist } from "./draw";
 import { hashWish, weekStartKst } from "./wish-text";
 
@@ -84,19 +84,38 @@ describe("주간 초기화", () => {
   });
 });
 
+const record = (overrides: Partial<AchievementRecord> = {}, taboo: AchievementRecord["breakdown"]["analysis"]["taboo"] = "none"): AchievementRecord => ({
+  text: "짧은 소원",
+  score: 60,
+  shared: false,
+  breakdown: {
+    analysis: { taboo, clarity: 60, realism: 60, density: 60, narrative: 60 },
+    severityAverage: 20,
+    misfortune: 40,
+    quality: 60,
+    tier: "medium",
+  },
+  ...overrides,
+});
+
 describe("업적", () => {
-  it("조건을 만족한 업적만 반환한다", () => {
-    const codes = matchAchievements({
-      text: "짧은 소원",
-      score: 92,
-      breakdown: {
-        analysis: { taboo: "none", clarity: 90, realism: 90, density: 90, narrative: 90 },
-        severityAverage: 20,
-        misfortune: 10,
-        quality: 90,
-        tier: "long",
-      },
-    }).map((achievement) => achievement.code);
-    expect(codes).toEqual(["first_wish", "genie_sweat", "short_and_sharp"]);
+  it("소원 하나로 만족한 업적을 모은다", () => {
+    const high = record({ score: 92, breakdown: { ...record().breakdown, quality: 90, tier: "long" } });
+    expect([...earnedCodes([high])]).toEqual(["first_wish", "genie_sweat", "short_and_sharp", "epic"]);
+  });
+
+  it("기록이 없으면 아무 업적도 없다", () => {
+    expect(earnedCodes([]).size).toBe(0);
+  });
+
+  it("쌓인 기록으로 단골, 공유, 세 금기 업적을 판단한다", () => {
+    const tenWishes = Array.from({ length: 10 }, () => record());
+    expect(earnedCodes(tenWishes).has("regular")).toBe(true);
+    expect(earnedCodes(tenWishes.slice(1)).has("regular")).toBe(false);
+    expect(earnedCodes([record({ shared: true })]).has("storyteller")).toBe(true);
+
+    const twoTaboos = [record({}, "kill"), record({}, "forced_love")];
+    expect(earnedCodes(twoTaboos).has("all_taboos")).toBe(false);
+    expect(earnedCodes([...twoTaboos, record({}, "resurrection")]).has("all_taboos")).toBe(true);
   });
 });

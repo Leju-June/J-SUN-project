@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { keywords, wishes, wishKeywords } from "@/db/schema";
 import { RefusalError, mockMode } from "./ai/client";
 import { analyzeWish, generateStory } from "./ai/pipeline";
-import { matchAchievements } from "./achievements";
+import { ACHIEVEMENTS } from "./achievements";
 import { drawKeywords, sampleCandidates, type RecentUses } from "./draw";
 import { earnedAchievements } from "./earned-achievements";
 import { releaseQuota, reserveQuota, spentTodayUsd } from "./quota";
@@ -121,7 +121,11 @@ export async function runWish(text: string, ip: string, emit: (event: WishEvent)
       await db.insert(wishKeywords).values(drawn.map((keyword) => ({ wishId: wish.id, keywordId: keyword.id })));
     }
 
-    const achievements = matchAchievements({ text, score, breakdown }).filter(({ code }) => !earnedBefore.has(code));
+    const earnedAfter = await earnedAchievements(ip);
+    const achievements = ACHIEVEMENTS.filter(({ code }) => earnedAfter.has(code) && !earnedBefore.has(code)).map(({ code, title }) => ({
+      code,
+      title,
+    }));
     emit({ type: "done", score, line: genieLine(score), achievements });
   } catch (error) {
     await db.update(wishes).set({ status: "failed" }).where(eq(wishes.id, wish.id));
