@@ -6,14 +6,15 @@ on:
 
 # 서버 준비가 끝나면 저장소 변수 DEPLOY_ENABLED를 true로 설정한다.
 jobs:
-  deploy:
+  build:
     if: vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    env:
-      IMAGE: ghcr.io/leju-june/jeenee
+    strategy:
+      matrix:
+        app: [gateway, jeenee]
     steps:
       - uses: actions/checkout@v4
 
@@ -25,13 +26,19 @@ jobs:
 
       - uses: docker/build-push-action@v6
         with:
-          context: .
+          context: apps/${{ matrix.app }}
           push: true
           build-args: |
             NEXT_PUBLIC_GA_ID=${{ vars.NEXT_PUBLIC_GA_ID }}
           tags: |
-            ${{ env.IMAGE }}:latest
-            ${{ env.IMAGE }}:${{ github.sha }}
+            ghcr.io/leju-june/j-sun-${{ matrix.app }}:latest
+            ghcr.io/leju-june/j-sun-${{ matrix.app }}:${{ github.sha }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
       - name: 서버 배포
         env:
@@ -45,12 +52,15 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
           printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/deploy_key
-          scp -i ~/.ssh/deploy_key docker-compose.prod.yml Caddyfile "$TARGET:~/jeenee/"
+          ssh -i ~/.ssh/deploy_key "$TARGET" "mkdir -p ~/j-sun/infra"
+          scp -i ~/.ssh/deploy_key docker-compose.prod.yml "$TARGET:~/j-sun/"
+          scp -i ~/.ssh/deploy_key infra/Caddyfile "$TARGET:~/j-sun/infra/"
           printf '%s' "$GHCR_TOKEN" | ssh -i ~/.ssh/deploy_key "$TARGET" "
             set -e
-            cd ~/jeenee
+            cd ~/j-sun
             docker login ghcr.io -u '$GHCR_USER' --password-stdin
-            docker compose -f docker-compose.prod.yml pull app migrate
-            docker compose -f docker-compose.prod.yml run --rm migrate
+            docker compose -f docker-compose.prod.yml pull gateway jeenee migrate-gateway migrate-jeenee
+            docker compose -f docker-compose.prod.yml run --rm migrate-gateway
+            docker compose -f docker-compose.prod.yml run --rm migrate-jeenee
             docker compose -f docker-compose.prod.yml up -d
           "

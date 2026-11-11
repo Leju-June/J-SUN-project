@@ -1,0 +1,3099 @@
+:root {
+  --bg: #120b24;
+  --bg-glow: #2a1650;
+  --box: #1c1236;
+  --line: #4b3585;
+  --text: #f1eafc;
+  --muted: #a99bc9;
+  --gold: #e8bd5f;
+  --danger: #e2716f;
+  --accent: #e8bd5f;
+  --well: #0d0719;
+  --hover: rgb(232 189 95 / 12%);
+  --glow: 0 0 40px rgb(232 189 95 / 8%);
+  --radius: 12px;
+  --font-body: var(--font-serif), serif;
+  --box-size: 18px;
+  color-scheme: dark;
+}
+
+/* 테마는 위 토큰을 덮어쓰고, 고유한 모양은 파일 끝의 테마 구역에 둔다. */
+html[data-theme="terminal"] {
+  --bg: #000;
+  --bg-glow: #000;
+  --box: #000;
+  --line: #c6c6c6;
+  --text: #e4e4e4;
+  --muted: #8c8c8c;
+  --gold: #ffff55;
+  --danger: #ff5555;
+  --accent: #55ffff;
+  --well: #222;
+  --hover: #333;
+  --glow: none;
+  --radius: 0px;
+  --font-body: var(--font-pixel), monospace;
+  --box-size: 16px;
+}
+
+html[data-theme="fairytale"] {
+  --bg: #101c4f;
+  --bg-glow: #101c4f;
+  --box: rgb(8 14 42 / 70%);
+  --line: var(--neon);
+  --text: #fffdf3;
+  --muted: #eef4ff;
+  --gold: var(--neon);
+  --danger: #ffb4a8;
+  --accent: var(--neon);
+  --well: rgb(9 22 66 / 55%);
+  --hover: rgb(255 255 255 / 14%);
+  --glow: none;
+  --radius: 10px;
+  --neon: #9ad8ff;
+  --scarf: #f8f2df;
+  --scarf-rib: #f5eedb;
+  --scarf-shade: rgb(120 100 50 / 22%);
+  --ink: #0b1433;
+  --ink-soft: #333c5c;
+  --ink-accent: #123a8c;
+  --ink-warm: #5c3700;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background: radial-gradient(ellipse at 50% 0%, var(--bg-glow), var(--bg) 65%) fixed;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.8;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(0, 760px) minmax(220px, 1fr);
+  height: 100vh;
+  height: 100dvh;
+}
+
+html[data-booting] .shell {
+  visibility: hidden;
+  /* 스크립트가 실패해도 화면이 영영 숨겨지지 않게 한다. */
+  animation: unboot 0s 3s forwards;
+}
+
+@keyframes unboot {
+  to {
+    visibility: visible;
+  }
+}
+
+/* 테마 장식 층. 항상 깔아두고 테마마다 필요한 조각만 켠다. */
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.night,
+.fx {
+  display: none;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.side .box {
+  flex: none;
+  font-size: 15px;
+}
+
+.side .box.fill {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 0 16px 16px;
+}
+
+.top {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.drawer-toggle,
+.backdrop {
+  display: none;
+}
+
+.brand {
+  color: var(--gold);
+  font-size: 22px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.panel-line {
+  margin: 0;
+}
+
+.panel-link {
+  color: var(--accent);
+}
+
+.panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.panel-list .earned {
+  color: var(--gold);
+}
+
+.panel-list .locked {
+  color: var(--muted);
+}
+
+.panel-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 14px;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 12px;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.theme-option[aria-pressed="true"] {
+  color: var(--gold);
+}
+
+/* 글자 대신 테마의 바탕색과 강조색을 반씩 칠한 견본을 보여준다. */
+.theme-mark {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, var(--swatch-base) 50%, var(--swatch-mark) 50%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--line);
+  font-size: 0;
+}
+
+.theme-option[aria-pressed="true"] .theme-mark {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+
+.shared-list {
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.shared-list a {
+  display: block;
+  text-decoration: none;
+}
+
+.shared-list a:hover .shared-text {
+  color: var(--accent);
+}
+
+.shared-score {
+  display: block;
+  color: var(--gold);
+}
+
+.shared-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+
+main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  /* 등장 연출로 상자가 잠깐 커지거나 기울어도 스크롤바가 깜빡이지 않게 여유를 둔다. */
+  margin: 0 -12px -12px;
+  padding: 0 12px 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+main > * {
+  flex-shrink: 0;
+}
+
+.box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--box);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--glow);
+  font-size: var(--box-size);
+}
+
+main > .box {
+  flex: 1 1 0;
+}
+
+.frame-title {
+  flex: none;
+  padding: 12px 20px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.frame-body {
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.side .frame-body {
+  padding: 8px 20px 14px;
+}
+
+.edge {
+  display: none;
+}
+
+.story-text {
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  background: var(--gold);
+  vertical-align: text-bottom;
+  animation: blink 1s steps(2) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.prompt-line {
+  min-height: 2em;
+  margin-top: 0;
+}
+
+.wish-form {
+  margin-top: 32px;
+}
+
+.wish-row {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.wish-row label {
+  padding: 8px 0;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.wish-input {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 8px 2px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  outline: none;
+  /* 긴 소원은 줄을 바꿔 보여주고, 높이는 WishFlow가 내용에 맞춘다. */
+  display: block;
+  max-height: 7.2em;
+  line-height: 1.8;
+  resize: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.wish-input:focus {
+  border-bottom-color: var(--gold);
+}
+
+.wish-input::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.wish-count.near-limit {
+  color: var(--danger);
+}
+
+.wish-echo {
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
+}
+
+.wish-echo span {
+  color: var(--gold);
+}
+
+.wish-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.button {
+  padding: 8px 18px;
+  background: transparent;
+  border: 1px solid var(--gold);
+  border-radius: min(var(--radius), 8px);
+  color: var(--gold);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.button:disabled {
+  border-color: var(--line);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.link-button {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.notice {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pager {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--line);
+  cursor: pointer;
+}
+
+/* 점은 작게 보이되 손가락으로 누를 수 있게 닿는 범위만 넓힌다. */
+.dot::after {
+  content: "";
+  position: absolute;
+  inset: -10px -3px;
+}
+
+.dot:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.dot.active {
+  background: var(--gold);
+}
+
+.dot:focus-visible,
+.speed-option:focus-visible {
+  outline: 1px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.reader-tools {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.speed {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.speed-option[aria-pressed="true"] {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* 키보드 안내는 마우스와 키보드를 쓰는 기기에서만 보여준다. */
+@media (hover: none), (pointer: coarse) {
+  .key-hint {
+    display: none;
+  }
+}
+
+.waiting {
+  margin-top: 0;
+  color: var(--muted);
+  animation: breathe 1.8s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.score-title {
+  color: var(--muted);
+}
+
+.score-value {
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.gauge {
+  height: 14px;
+  margin: 12px 0 20px;
+  overflow: hidden;
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: min(var(--radius), 8px);
+}
+
+.gauge > div {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--danger), var(--gold));
+  transition: width 1.6s ease-out;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.actions-note {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.wish-quote {
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
+}
+
+.section-title {
+  margin: 28px 0 10px;
+  color: var(--gold);
+  font-size: 1.05em;
+}
+
+.section-title:first-child {
+  margin-top: 0;
+}
+
+.rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.hint {
+  display: block;
+  padding-left: 4ch;
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.record-list {
+  gap: 12px;
+}
+
+.record-list a {
+  display: block;
+  text-decoration: none;
+}
+
+.record-list a:hover .record-text {
+  color: var(--accent);
+}
+
+.record-meta {
+  display: block;
+  color: var(--gold);
+  font-size: 0.85em;
+}
+
+.record-text {
+  overflow-wrap: anywhere;
+}
+
+.rank-list {
+  counter-reset: rank;
+}
+
+.rank-list > li {
+  counter-increment: rank;
+}
+
+.rank-list .record-meta::before {
+  content: counter(rank) "위 · ";
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.chip {
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--gold);
+}
+
+.card {
+  margin-bottom: 12px;
+  padding: 16px;
+  background: var(--box);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.card a {
+  text-decoration: none;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th,
+td {
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.field {
+  padding: 6px 8px;
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: min(var(--radius), 8px);
+}
+
+/*
+ * 테마 등장 연출. 테마는 아래 변수만 정하고, 순서와 지연은 여기서 맞춘다.
+ * --enter: 상자, --enter-main: 가운데 상자, --enter-rest: 가운데의 나머지, --enter-inner: 상자 안 제목과 본문.
+ * 우선순위가 0인 :where()를 써서 밤하늘의 여는 연출처럼 테마가 직접 건 애니메이션이 이긴다.
+ */
+.side-left > :nth-child(2) {
+  --i: 1;
+}
+
+.side-left > :nth-child(3) {
+  --i: 2;
+}
+
+.side-left > :nth-child(n + 4),
+main > :nth-child(n + 3) {
+  --i: 3;
+}
+
+.side-right > *,
+main > * {
+  --i: 1;
+}
+
+main > :nth-child(2) {
+  --i: 2;
+}
+
+:where(.side > .box) {
+  animation: var(--enter, none);
+}
+
+:where(main > .box) {
+  animation: var(--enter-main, var(--enter, none));
+}
+
+:where(main > :not(.box)) {
+  animation: var(--enter-rest, var(--enter, none));
+}
+
+:where(.side > .box, main > *) {
+  animation-delay: calc(var(--i, 0) * var(--enter-stagger, 0.12s));
+}
+
+:where(.side > .box, main > .box) > :where(.frame-title, .frame-body) {
+  animation: var(--enter-inner, none);
+  animation-delay: calc(var(--i, 0) * var(--enter-stagger, 0.12s) + var(--enter-inner-delay, 0.3s));
+}
+
+/* 스마트폰: 양쪽 사이드바를 토글로 연다. */
+@media (max-width: 899px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .center {
+    padding: 0 12px 12px;
+  }
+
+  .top {
+    justify-content: space-between;
+  }
+
+  .drawer-toggle {
+    display: block;
+    padding: 4px 0;
+    color: var(--accent);
+  }
+
+  .side {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    z-index: 20;
+    width: min(84vw, 320px);
+    background: var(--bg);
+    visibility: hidden;
+    transition: transform 0.2s ease-out, visibility 0.2s;
+  }
+
+  .side-left {
+    left: 0;
+    transform: translateX(-100%);
+  }
+
+  .side-right {
+    right: 0;
+    transform: translateX(100%);
+  }
+
+  .side.open {
+    transform: none;
+    visibility: visible;
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    padding: 0;
+    background: rgb(0 0 0 / 60%);
+    border: 0;
+  }
+
+  .frame-body {
+    padding: 16px;
+  }
+
+  .box {
+    font-size: min(var(--box-size), 16px);
+  }
+}
+
+/* 터미널 테마: 상자를 글자로 그리고 화면 전체를 타이핑하듯 드러낸다. */
+::highlight(typing-hidden) {
+  color: transparent;
+}
+
+::highlight(typing-caret) {
+  background-color: var(--text);
+  color: transparent;
+}
+
+html[data-theme="terminal"] {
+  -webkit-font-smoothing: none;
+}
+
+html[data-theme="terminal"] body {
+  line-height: 1.5;
+}
+
+html[data-theme="terminal"] .box,
+html[data-theme="terminal"] .side .box {
+  border: 0;
+  font-size: 16px;
+}
+
+html[data-theme="terminal"] .edge {
+  display: block;
+  position: absolute;
+  color: var(--line);
+  line-height: 1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+html[data-theme="terminal"] .edge-row {
+  display: flex;
+  left: 0;
+  right: 0;
+  height: 1em;
+  animation: draw-across 0.45s steps(24) both;
+}
+
+html[data-theme="terminal"] .edge-top {
+  top: 0;
+}
+
+html[data-theme="terminal"] .edge-bottom {
+  bottom: 0;
+  animation-delay: 0.3s;
+}
+
+html[data-theme="terminal"] .edge-fill {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+html[data-theme="terminal"] .edge-side {
+  top: 1em;
+  bottom: 1em;
+  width: 1ch;
+  white-space: normal;
+  word-break: break-all;
+  animation: draw-down 0.3s steps(12) 0.15s both;
+}
+
+html[data-theme="terminal"] .edge-left {
+  left: 0;
+}
+
+html[data-theme="terminal"] .edge-right {
+  right: 0;
+}
+
+@keyframes draw-across {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes draw-down {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+html[data-theme="terminal"] .frame-title {
+  position: absolute;
+  top: 0;
+  left: 3ch;
+  z-index: 1;
+  padding: 0 1ch;
+  background: var(--line);
+  color: #000;
+  font-size: 16px;
+  line-height: 1;
+}
+
+html[data-theme="terminal"] .frame-body {
+  margin: 1em 1ch;
+  padding: 10px 14px;
+}
+
+html[data-theme="terminal"] .side .frame-body {
+  padding: 6px 12px;
+}
+
+html[data-theme="terminal"] .brand {
+  padding: 0 2ch;
+  background: var(--line);
+  color: #000;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+html[data-theme="terminal"] .button {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--accent);
+}
+
+html[data-theme="terminal"] .button::before {
+  content: "[ ";
+}
+
+html[data-theme="terminal"] .button::after {
+  content: " ]";
+}
+
+html[data-theme="terminal"] .button:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+html[data-theme="terminal"] .button:disabled {
+  color: var(--muted);
+}
+
+html[data-theme="terminal"] .wish-input {
+  color: var(--gold);
+  caret-color: var(--gold);
+  border-bottom-style: dashed;
+}
+
+html[data-theme="terminal"] .notice,
+html[data-theme="terminal"] .wish-meta,
+html[data-theme="terminal"] .reader-tools,
+html[data-theme="terminal"] .chip,
+html[data-theme="terminal"] table {
+  font-size: 16px;
+}
+
+html[data-theme="terminal"] .cursor {
+  width: 1ch;
+  background: var(--text);
+}
+
+html[data-theme="terminal"] .waiting {
+  color: #55ff55;
+  animation: none;
+}
+
+html[data-theme="terminal"] .dot {
+  border-radius: 0;
+}
+
+html[data-theme="terminal"] .score-value {
+  font-size: 32px;
+  font-weight: 400;
+}
+
+html[data-theme="terminal"] .gauge {
+  height: 16px;
+  border: 0;
+}
+
+html[data-theme="terminal"] .gauge > div {
+  background: repeating-linear-gradient(90deg, #55ff55 0 6px, transparent 6px 8px);
+  transition-timing-function: steps(24);
+}
+
+html[data-theme="terminal"] .chip {
+  padding: 0;
+  border: 0;
+}
+
+html[data-theme="terminal"] .chip::before {
+  content: "* ";
+}
+
+html[data-theme="terminal"] h1,
+html[data-theme="terminal"] h2 {
+  color: var(--gold);
+  font-size: 16px;
+  font-weight: 400;
+}
+
+html[data-theme="terminal"] .card {
+  margin-bottom: 8px;
+  padding: 0;
+  border: 0;
+}
+
+html[data-theme="terminal"] .field {
+  border-style: dashed;
+}
+
+html[data-theme="terminal"] .theme-mark {
+  width: auto;
+  height: auto;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: inherit;
+}
+
+/* 밤하늘 테마: 목도리가 시야를 감싸고, 위쪽 밤하늘에는 별똥별이 계속 떨어진다. */
+html[data-theme="fairytale"] .scene {
+  background: var(--bg);
+}
+
+html[data-theme="fairytale"] .night {
+  display: block;
+}
+
+.scene-sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: #fff6d8;
+}
+
+.scene-moon {
+  position: absolute;
+  top: 26px;
+  left: calc(50% - 240px);
+  width: 62px;
+  height: 62px;
+  background: #ffe9a8;
+  border-radius: 50%;
+}
+
+.meteor {
+  position: absolute;
+  width: 130px;
+  height: 2px;
+  background: linear-gradient(90deg, #fffdf3, rgb(255 253 243 / 0%));
+  opacity: 0;
+  animation: meteor 9s linear infinite;
+}
+
+.meteor-1 {
+  top: 2px;
+  left: 66%;
+  animation-delay: 2.4s;
+}
+
+.meteor-2 {
+  top: -6px;
+  left: 92%;
+  animation-delay: 5.4s;
+}
+
+.meteor-3 {
+  top: 10px;
+  left: 46%;
+  animation-delay: 7.8s;
+}
+
+@keyframes meteor {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(-19.6deg);
+  }
+  2% {
+    opacity: 1;
+  }
+  13% {
+    opacity: 1;
+  }
+  16%,
+  100% {
+    opacity: 0;
+    transform: translate(-480px, 171px) rotate(-19.6deg);
+  }
+}
+
+.scarf {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  will-change: transform;
+}
+
+.scarf-cloth {
+  fill: var(--scarf);
+}
+
+.scarf-ribs {
+  fill: none;
+  stroke: var(--scarf-rib);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 8 7;
+}
+
+.scarf-shade {
+  fill: none;
+  stroke: var(--scarf-shade);
+  stroke-width: 12;
+  transform: translateY(-3px);
+}
+
+/* 맨 위 겹은 하늘과 맞닿아 그림자가 필요 없다. */
+.scarf-back .scarf-shade {
+  display: none;
+}
+
+.scarf-tassels {
+  fill: none;
+  stroke: var(--scarf-rib);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+/* 목도리가 감기는 동안 글자와 상자를 숨겼다가 끝나면 띄운다. */
+html[data-opening] .side > *,
+html[data-opening] main {
+  opacity: 0;
+  transform: translateY(32px);
+  /* 스크립트가 실패해도 화면이 영영 숨겨지지 않게 한다. */
+  animation: opening-fallback 0s 6s forwards;
+}
+
+@keyframes opening-fallback {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html[data-theme="fairytale"] .top {
+  height: 112px;
+  padding: 0;
+}
+
+html[data-theme="fairytale"] .brand {
+  color: var(--scarf);
+  font-family: var(--font-script), cursive;
+  font-size: 58px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+html[data-theme="fairytale"] .side {
+  --text: var(--ink);
+  --muted: var(--ink-soft);
+  --gold: var(--ink-warm);
+  --accent: var(--ink-accent);
+  --line: var(--ink-soft);
+  gap: 4px;
+  padding: 84px 20px 20px;
+  color: var(--text);
+}
+
+html[data-theme="fairytale"] .side > *,
+html[data-theme="fairytale"] main {
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+}
+
+html[data-theme="fairytale"] .side .box {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  font-size: 16px;
+}
+
+html[data-theme="fairytale"] .side,
+html[data-theme="fairytale"] main > :not(.box) {
+  font-weight: 700;
+}
+
+html[data-theme="fairytale"] main .notice,
+html[data-theme="fairytale"] main .wish-meta,
+html[data-theme="fairytale"] main .reader-tools {
+  font-size: 15px;
+}
+
+html[data-theme="fairytale"] main .box {
+  text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
+}
+
+html[data-theme="fairytale"] .side .frame-title {
+  padding: 0;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+html[data-theme="fairytale"] .side .frame-body {
+  padding: 4px 0 12px;
+}
+
+html[data-theme="fairytale"] main {
+  --text: var(--ink);
+  --muted: var(--ink-soft);
+  --gold: var(--ink-warm);
+  --accent: var(--ink-accent);
+  --line: var(--ink-soft);
+  /* 네온 빛이 스크롤 영역에 잘리지 않게 여백을 더 둔다. */
+  margin: 0 -14px -14px;
+  padding: 0 14px 14px;
+  color: var(--text);
+}
+
+html[data-theme="fairytale"] main .box,
+html[data-theme="fairytale"] main .card {
+  --text: #fffdf3;
+  --muted: #eef4ff;
+  --gold: var(--neon);
+  --accent: var(--neon);
+  --line: var(--neon);
+  background: var(--box);
+  border: 1.5px solid var(--neon);
+  box-shadow:
+    0 0 5px rgb(99 188 255 / 90%),
+    0 0 18px rgb(99 188 255 / 45%),
+    inset 0 0 14px rgb(99 188 255 / 18%);
+  color: var(--text);
+  backdrop-filter: blur(4px);
+}
+
+/* 모서리를 더 밝게 강조한다. */
+html[data-theme="fairytale"] main .box::before,
+html[data-theme="fairytale"] main .box::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #d9f0ff;
+  filter: drop-shadow(0 0 4px var(--neon));
+  pointer-events: none;
+}
+
+html[data-theme="fairytale"] main .box::before {
+  top: -1.5px;
+  left: -1.5px;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: var(--radius);
+}
+
+html[data-theme="fairytale"] main .box::after {
+  right: -1.5px;
+  bottom: -1.5px;
+  border-top: 0;
+  border-left: 0;
+  border-bottom-right-radius: var(--radius);
+}
+
+html[data-theme="fairytale"] main .frame-title {
+  padding-top: 16px;
+  color: var(--neon);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-shadow: 0 0 8px rgb(99 188 255 / 85%);
+}
+
+html[data-theme="fairytale"] main .prompt-line,
+html[data-theme="fairytale"] main .wish-row label {
+  font-weight: 700;
+}
+
+html[data-theme="fairytale"] main .wish-row label,
+html[data-theme="fairytale"] main .score-value,
+html[data-theme="fairytale"] main .box .button {
+  text-shadow: 0 0 8px rgb(99 188 255 / 85%);
+}
+
+html[data-theme="fairytale"] main .box .button:not(:disabled) {
+  box-shadow: 0 0 6px rgb(99 188 255 / 70%), inset 0 0 6px rgb(99 188 255 / 25%);
+}
+
+html[data-theme="fairytale"] main .wish-input:focus {
+  border-bottom-color: var(--neon);
+  box-shadow: 0 1px 0 var(--neon);
+}
+
+@media (max-width: 899px) {
+  html[data-theme="fairytale"] .top {
+    height: 96px;
+    padding-bottom: 24px;
+  }
+
+  html[data-theme="fairytale"] .brand {
+    font-size: 44px;
+  }
+
+  html[data-theme="fairytale"] .drawer-toggle {
+    color: var(--scarf);
+  }
+
+  html[data-theme="fairytale"] .side {
+    padding-top: 28px;
+    background: var(--scarf);
+  }
+
+  .scene-moon {
+    top: 22px;
+    left: calc(50% + 62px);
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* 램프 테마: 바닥의 램프에서 연기가 피어오르고, 화면은 연기 속에서 맺히듯 아래에서부터 자라난다. */
+html[data-theme="lamp"] {
+  --enter: smoke-in 1.1s cubic-bezier(0.2, 0.6, 0.2, 1) backwards;
+  --enter-stagger: 0.16s;
+}
+
+html[data-theme="lamp"] body {
+  background:
+    radial-gradient(ellipse 55% 40% at 50% 110%, rgb(232 189 95 / 24%), transparent 70%),
+    radial-gradient(ellipse at 50% 0%, var(--bg-glow), var(--bg) 65%);
+  background-color: var(--bg);
+}
+
+html[data-theme="lamp"] :where(.side > .box, main > *) {
+  transform-origin: 50% 100%;
+}
+
+html[data-theme="lamp"] .fx {
+  display: block;
+  position: absolute;
+  bottom: -40vh;
+  width: 50vw;
+  height: 80vh;
+  background: radial-gradient(closest-side, rgb(186 156 255 / 16%), transparent);
+  border-radius: 50%;
+  animation: wisp 18s ease-in infinite;
+}
+
+html[data-theme="lamp"] .fx-1 {
+  left: 2%;
+  animation-delay: -4s;
+}
+
+html[data-theme="lamp"] .fx-2 {
+  left: 28%;
+  background: radial-gradient(closest-side, rgb(232 189 95 / 13%), transparent);
+  animation-duration: 22s;
+  animation-delay: -10s;
+}
+
+html[data-theme="lamp"] .fx-3 {
+  left: 55%;
+  animation-delay: -16s;
+}
+
+html[data-theme="lamp"] .brand {
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 18px rgb(232 189 95 / 55%);
+}
+
+@keyframes wisp {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.7, 0.9);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-8vw, -110vh) scale(1.4, 1.1) rotate(-12deg);
+  }
+}
+
+@keyframes smoke-in {
+  from {
+    opacity: 0;
+    filter: blur(16px);
+    transform: scale(0.94);
+  }
+  55% {
+    opacity: 0.85;
+    filter: blur(3px);
+  }
+}
+
+/* 계약서 테마: 어두운 책상 위에 양피지 조항이 놓이고, 잉크가 번지듯 글자가 배어난다. */
+html[data-theme="contract"] {
+  --bg: #24170e;
+  --bg-glow: #3e2716;
+  --box: #efe2c4;
+  --line: #6b4f33;
+  --text: #f1e4c6;
+  --muted: #c4ab84;
+  --gold: #e3b866;
+  --danger: #c4553c;
+  --accent: #e3b866;
+  --well: #1a100a;
+  --hover: rgb(227 184 102 / 12%);
+  --glow: 0 14px 30px rgb(0 0 0 / 55%);
+  --radius: 2px;
+  --enter: paper-place 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+  --enter-inner: ink-bleed 1.3s ease-out backwards;
+  --enter-inner-delay: 0.35s;
+}
+
+html[data-theme="contract"] body {
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 30%, var(--bg-glow), transparent 70%),
+    repeating-linear-gradient(92deg, transparent 0 22px, rgb(0 0 0 / 12%) 22px 24px, transparent 24px 61px),
+    var(--bg);
+}
+
+html[data-theme="contract"] .shell {
+  counter-reset: article;
+}
+
+/* 상자 안은 양피지라 잉크색으로 다시 정한다. */
+html[data-theme="contract"] :is(.box, .card) {
+  --text: #2b1d12;
+  --muted: #6e5537;
+  --gold: #7a1616;
+  --accent: #7a1616;
+  --danger: #9b2c1c;
+  --line: #9c7d55;
+  --well: #e2d1aa;
+  --hover: rgb(122 22 22 / 9%);
+  background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgb(150 105 50 / 28%)), var(--box);
+  border-color: #c4a77a;
+  outline: 1px solid rgb(122 90 50 / 55%);
+  outline-offset: -7px;
+  color: var(--text);
+  counter-increment: article;
+}
+
+html[data-theme="contract"] .frame-title {
+  margin: 0 20px;
+  padding: 14px 0 6px;
+  border-bottom: 1px solid rgb(122 90 50 / 30%);
+  color: var(--gold);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+html[data-theme="contract"] .frame-title::before {
+  content: "제" counter(article) "조  ";
+}
+
+/* 가운데 상자에는 밀랍 봉인이 찍힌다. */
+html[data-theme="contract"] main > .box::after {
+  content: "J";
+  position: absolute;
+  top: 8px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  background: radial-gradient(circle at 38% 35%, #b33a2c, #7a1616 60%, #561010);
+  border-radius: 46% 54% 50% 50% / 52% 48% 52% 48%;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 40%), inset 0 0 0 4px rgb(0 0 0 / 14%);
+  color: rgb(255 220 200 / 72%);
+  font-family: var(--font-script), cursive;
+  font-size: 28px;
+  line-height: 1;
+  animation: seal-stamp 0.5s 0.9s cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
+}
+
+html[data-theme="contract"] .brand {
+  color: var(--text);
+  font-size: 20px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+}
+
+html[data-theme="contract"] .brand::before,
+html[data-theme="contract"] .brand::after {
+  content: "";
+  display: inline-block;
+  width: 36px;
+  margin: 0 14px;
+  border-top: 1px solid var(--muted);
+  vertical-align: middle;
+}
+
+html[data-theme="contract"] .wish-input {
+  border-bottom-style: dotted;
+}
+
+html[data-theme="contract"] .box .notice {
+  font-style: italic;
+}
+
+@keyframes paper-place {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) rotate(-0.6deg) scale(0.98);
+  }
+}
+
+@keyframes ink-bleed {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+  }
+  40% {
+    opacity: 0.6;
+    filter: blur(1.2px);
+  }
+}
+
+@keyframes seal-stamp {
+  from {
+    opacity: 0;
+    transform: scale(2.2) rotate(-25deg);
+  }
+}
+
+/* 영수증 테마: 감열지가 프린터에서 한 칸씩 밀려 나오듯 위에서부터 찍힌다. */
+html[data-theme="receipt"] {
+  --bg: #2b2a28;
+  --bg-glow: #3a3936;
+  --box: #fbfaf6;
+  --line: #5a5853;
+  --text: #f3f1ea;
+  --muted: #a9a59b;
+  --gold: #f3f1ea;
+  --danger: #e2716f;
+  --accent: #f3f1ea;
+  --well: #1f1e1c;
+  --hover: rgb(255 255 255 / 10%);
+  --glow: none;
+  --radius: 0px;
+  --font-body: var(--font-mono), monospace;
+  --box-size: 16px;
+  --enter: receipt-print 0.9s steps(14, end) backwards;
+  --enter-stagger: 0.25s;
+}
+
+html[data-theme="receipt"] :is(.box, .card) {
+  --text: #2d2d2d;
+  --muted: #77746c;
+  --gold: #111;
+  --accent: #111;
+  --line: #9a978f;
+  --well: #e9e7e0;
+  --hover: rgb(0 0 0 / 7%);
+  padding: 8px 0;
+  border: 0;
+  color: var(--text);
+  /* 위아래 가장자리를 톱니 모양으로 찢는다. */
+  mask:
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 14px 51% repeat-x,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 14px 51% repeat-x;
+}
+
+html[data-theme="receipt"] .frame-title {
+  margin: 0 16px;
+  padding: 12px 0 8px;
+  border-bottom: 1px dashed var(--line);
+  color: var(--text);
+  font-weight: 700;
+  text-align: center;
+}
+
+html[data-theme="receipt"] .frame-title::before {
+  content: "*** ";
+}
+
+html[data-theme="receipt"] .frame-title::after {
+  content: " ***";
+}
+
+/* 가운데 상자 아래에는 바코드를 찍는다. 본문이 바코드 밑으로 흐르지 않게 자리를 따로 둔다. */
+html[data-theme="receipt"] main > .box {
+  padding-bottom: 64px;
+}
+
+html[data-theme="receipt"] main > .box::after {
+  content: "";
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  width: min(220px, 60%);
+  height: 30px;
+  background:
+    repeating-linear-gradient(90deg, #2d2d2d 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(90deg, #2d2d2d 0 3px, transparent 3px 11px),
+    repeating-linear-gradient(90deg, transparent 0 4px, #2d2d2d 4px 5px, transparent 5px 13px);
+  translate: -50% 0;
+}
+
+html[data-theme="receipt"] .brand {
+  font-size: 18px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+}
+
+html[data-theme="receipt"] .button {
+  border-style: dashed;
+  border-radius: 0;
+}
+
+html[data-theme="receipt"] .box .button:not(:disabled) {
+  background: #2d2d2d;
+  border-color: #2d2d2d;
+  color: #fbfaf6;
+}
+
+html[data-theme="receipt"] .box .button:hover:not(:disabled) {
+  background: #000;
+}
+
+html[data-theme="receipt"] .wish-input {
+  border-bottom-style: dashed;
+}
+
+html[data-theme="receipt"] .wish-meta {
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+
+html[data-theme="receipt"] .score-value {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-block: 1px dashed var(--line);
+  font-size: 28px;
+}
+
+html[data-theme="receipt"] .score-value::before {
+  content: "합계";
+}
+
+html[data-theme="receipt"] .gauge {
+  border-radius: 0;
+}
+
+html[data-theme="receipt"] .gauge > div {
+  background: repeating-linear-gradient(90deg, #2d2d2d 0 3px, transparent 3px 5px);
+}
+
+html[data-theme="receipt"] .chip,
+html[data-theme="receipt"] .dot {
+  border-radius: 0;
+}
+
+html[data-theme="receipt"] .chip {
+  border-style: dashed;
+}
+
+@keyframes receipt-print {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+/* 부적 테마: 어두운 사당에 노란 부적이 붙고, 붓이 대각선으로 쓸고 지나가며 드러난다. */
+html[data-theme="talisman"] {
+  --bg: #17110d;
+  --bg-glow: #2a1712;
+  --box: #f3dc8f;
+  --line: #6a3a2a;
+  --text: #f4e6c0;
+  --muted: #c9ae7c;
+  --gold: #e8c35a;
+  --danger: #e2574a;
+  --accent: #e8c35a;
+  --well: #0f0b08;
+  --hover: rgb(232 195 90 / 12%);
+  --glow: none;
+  --radius: 0px;
+  --vermilion: #b8231a;
+  --enter: brush-sweep 1.1s cubic-bezier(0.5, 0, 0.3, 1) backwards;
+  --enter-rest: fade-in 0.5s ease-out backwards;
+  --enter-stagger: 0.2s;
+}
+
+html[data-theme="talisman"] :is(.box, .card) {
+  --text: #2a1a0f;
+  --muted: #6b4a2a;
+  --gold: var(--vermilion);
+  --accent: var(--vermilion);
+  --danger: var(--vermilion);
+  --line: rgb(184 35 26 / 55%);
+  --well: #e8cc72;
+  --hover: rgb(184 35 26 / 10%);
+  background: radial-gradient(ellipse at 30% 20%, rgb(255 255 255 / 25%), transparent 60%), var(--box);
+  border: 2px solid var(--vermilion);
+  outline: 1px solid var(--vermilion);
+  outline-offset: -8px;
+  color: var(--text);
+}
+
+/* 붓이 지나간 자리만 보이도록 마스크를 대각선으로 민다. */
+html[data-theme="talisman"] :is(.side > .box, main > .box) {
+  mask-image: linear-gradient(125deg, #000 42%, transparent 58%);
+  mask-size: 300% 300%;
+  mask-position: 0 0;
+}
+
+html[data-theme="talisman"] main > .box {
+  isolation: isolate;
+}
+
+html[data-theme="talisman"] main > .box::before {
+  content: "願";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: grid;
+  place-items: center;
+  color: rgb(184 35 26 / 9%);
+  font-family: var(--font-serif), "Batang", serif;
+  font-size: min(42vh, 300px);
+  line-height: 1;
+  pointer-events: none;
+}
+
+html[data-theme="talisman"] .frame-title {
+  padding-top: 16px;
+  color: var(--gold);
+  font-family: var(--font-brush), var(--font-serif), serif;
+  font-size: 24px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+html[data-theme="talisman"] .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gold);
+  font-family: var(--font-brush), cursive;
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+/* 낙관처럼 붉은 도장을 찍는다. */
+html[data-theme="talisman"] .brand::after {
+  content: "願";
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background: var(--vermilion);
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 2px rgb(243 220 143 / 35%);
+  color: #f3dc8f;
+  font-family: var(--font-serif), "Batang", serif;
+  font-size: 19px;
+  rotate: -4deg;
+}
+
+html[data-theme="talisman"] .fx-1,
+html[data-theme="talisman"] .fx-2 {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  aspect-ratio: 1;
+  border: 26px solid rgb(184 35 26 / 9%);
+  border-radius: 47% 53% 49% 51% / 52% 47% 53% 48%;
+  animation: turn-centered 80s linear infinite;
+}
+
+html[data-theme="talisman"] .fx-1 {
+  width: min(120vh, 90vw);
+}
+
+html[data-theme="talisman"] .fx-2 {
+  width: min(96vh, 72vw);
+  border-width: 6px;
+  border-color: rgb(232 195 90 / 6%);
+  animation-direction: reverse;
+  animation-duration: 120s;
+}
+
+html[data-theme="talisman"] .gauge > div {
+  background: var(--vermilion);
+}
+
+@keyframes brush-sweep {
+  from {
+    mask-position: 100% 100%;
+  }
+  to {
+    mask-position: 0 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes turn-centered {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* 타로 테마: 상자가 뒷면을 보인 카드처럼 뒤집히며 펼쳐진다. */
+html[data-theme="tarot"] {
+  --bg: #14102a;
+  --bg-glow: #2a1f52;
+  --box: #1d1638;
+  --line: #6e5a2e;
+  --text: #efe6d2;
+  --muted: #b3a5c9;
+  --gold: #c9a24d;
+  --danger: #d9677a;
+  --accent: #e3c77e;
+  --well: #110c22;
+  --hover: rgb(201 162 77 / 14%);
+  --glow: 0 18px 40px rgb(0 0 0 / 45%);
+  --radius: 14px;
+  --card-back:
+    repeating-linear-gradient(45deg, rgb(201 162 77 / 40%) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(-45deg, rgb(201 162 77 / 40%) 0 1px, transparent 1px 14px),
+    radial-gradient(circle, #3b2d6e, #1d1638);
+  --enter: tarot-flip 0.9s backwards;
+  --enter-rest: fade-in 0.6s ease-out backwards;
+  --enter-inner: fade-in 0.3s ease-out backwards;
+  --enter-inner-delay: 0.45s;
+  --enter-stagger: 0.18s;
+}
+
+html[data-theme="tarot"] body {
+  background:
+    radial-gradient(circle at 20% 30%, rgb(227 199 126 / 50%) 0 1px, transparent 1.5px) 0 0 / 97px 89px,
+    radial-gradient(circle at 70% 60%, rgb(227 199 126 / 35%) 0 1px, transparent 1.5px) 0 0 / 131px 113px,
+    radial-gradient(ellipse at 50% 0%, var(--bg-glow), var(--bg) 70%);
+  background-color: var(--bg);
+}
+
+html[data-theme="tarot"] .shell {
+  counter-reset: card;
+}
+
+html[data-theme="tarot"] :is(.box, .card) {
+  border-color: var(--gold);
+  outline: 1px solid rgb(201 162 77 / 45%);
+  outline-offset: -7px;
+  counter-increment: card;
+}
+
+html[data-theme="tarot"] .frame-title {
+  padding-top: 16px;
+  color: var(--gold);
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-align: center;
+}
+
+/* 카드 머리에 로마 숫자를 단다. */
+html[data-theme="tarot"] .frame-title::before {
+  content: counter(card, upper-roman);
+  display: block;
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+}
+
+html[data-theme="tarot"] main > .box::before,
+html[data-theme="tarot"] main > .box::after {
+  content: "✦";
+  position: absolute;
+  color: var(--gold);
+  font-size: 14px;
+  line-height: 1;
+}
+
+html[data-theme="tarot"] main > .box::before {
+  top: 16px;
+  left: 18px;
+}
+
+html[data-theme="tarot"] main > .box::after {
+  right: 18px;
+  bottom: 16px;
+}
+
+html[data-theme="tarot"] .brand {
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+}
+
+html[data-theme="tarot"] .brand::before {
+  content: "☾ ";
+}
+
+html[data-theme="tarot"] .brand::after {
+  content: " ☽";
+}
+
+html[data-theme="tarot"] .fx-1,
+html[data-theme="tarot"] .fx-2 {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  aspect-ratio: 1;
+  border: 1px solid rgb(201 162 77 / 16%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+html[data-theme="tarot"] .fx-1 {
+  width: min(110vh, 95vw);
+  border-style: dashed;
+  animation: turn-centered 160s linear infinite;
+}
+
+html[data-theme="tarot"] .fx-2 {
+  width: min(80vh, 70vw);
+  outline: 1px solid rgb(201 162 77 / 10%);
+  outline-offset: 14px;
+}
+
+html[data-theme="tarot"] .chip {
+  border-color: var(--gold);
+  border-radius: 999px;
+}
+
+/*
+ * 앞 절반은 뒷면 무늬로 돌다가 옆면이 된 순간 앞면으로 바꾼다.
+ * 원근 때문에 가까운 쪽이 커지므로 처음에 줄여 두어 스크롤 영역을 넘지 않게 한다.
+ */
+@keyframes tarot-flip {
+  0% {
+    background-image: var(--card-back);
+    transform: perspective(2000px) rotateY(180deg) scale(0.7);
+    animation-timing-function: ease-in;
+  }
+  49.9% {
+    background-image: var(--card-back);
+  }
+  50% {
+    background-image: none;
+    transform: perspective(2000px) rotateY(90deg) scale(0.72);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    transform: perspective(2000px) rotateY(0deg) scale(1);
+  }
+}
+
+/* 호외 테마: 신문지 위에 기사가 찍혀 나오고, 가운데 기사는 영화 속 신문처럼 빙글 돌며 1면에 뜬다. */
+html[data-theme="newspaper"] {
+  --bg: #ece6d6;
+  --bg-glow: #f4efe2;
+  --box: transparent;
+  --line: #1a1a1a;
+  --text: #1a1a1a;
+  --muted: #555049;
+  --gold: #1a1a1a;
+  --danger: #8c1c13;
+  --accent: #8c1c13;
+  --well: #ddd5c0;
+  --hover: rgb(0 0 0 / 7%);
+  --glow: none;
+  --radius: 0px;
+  --enter: press-stamp 0.45s ease-out backwards;
+  --enter-main: press-spin 1s cubic-bezier(0.3, 0.6, 0.4, 1) backwards;
+  --enter-stagger: 0.09s;
+  color-scheme: light;
+}
+
+html[data-theme="newspaper"] body {
+  background: radial-gradient(rgb(0 0 0 / 6%) 0.8px, transparent 1.2px) 0 0 / 5px 5px, var(--bg);
+}
+
+html[data-theme="newspaper"] .box {
+  border: 0;
+  border-top: 3px double var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+html[data-theme="newspaper"] main > .box {
+  background: #f4efe2;
+  border: 2px solid var(--line);
+  box-shadow: 4px 4px 0 rgb(0 0 0 / 15%);
+}
+
+html[data-theme="newspaper"] .frame-title {
+  align-self: flex-start;
+  margin: 12px 20px 0;
+  padding: 1px 10px;
+  background: var(--line);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+html[data-theme="newspaper"] .side .frame-title {
+  margin-left: 0;
+}
+
+html[data-theme="newspaper"] .side .frame-body {
+  padding: 8px 2px 14px;
+}
+
+html[data-theme="newspaper"] .top {
+  flex-wrap: wrap;
+  row-gap: 0;
+  margin-bottom: 10px;
+  padding: 6px 0 0;
+  border-bottom: 3px double var(--line);
+}
+
+html[data-theme="newspaper"] .brand {
+  color: var(--text);
+  font-family: var(--font-blackletter), serif;
+  font-size: 46px;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+html[data-theme="newspaper"] .top::after {
+  content: "號外 · 지니 일보 · 값: 소원 하나";
+  flex-basis: 100%;
+  padding: 3px 0;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-align: center;
+}
+
+html[data-theme="newspaper"] .story-text {
+  text-align: justify;
+}
+
+/* 기사 첫 글자를 크게 내려 앉힌다. */
+html[data-theme="newspaper"] .story-text::first-letter {
+  float: left;
+  margin: 6px 8px 0 0;
+  font-size: 3.4em;
+  font-weight: 700;
+  line-height: 0.85;
+}
+
+html[data-theme="newspaper"] .score-value {
+  font-size: 52px;
+  letter-spacing: -0.02em;
+}
+
+html[data-theme="newspaper"] .gauge > div {
+  background: repeating-linear-gradient(90deg, #1a1a1a 0 2px, transparent 2px 4px);
+}
+
+html[data-theme="newspaper"] .button,
+html[data-theme="newspaper"] .chip,
+html[data-theme="newspaper"] .gauge {
+  border-radius: 0;
+}
+
+html[data-theme="newspaper"] .button:hover:not(:disabled) {
+  background: var(--line);
+  color: var(--bg);
+}
+
+@keyframes press-stamp {
+  from {
+    opacity: 0;
+    filter: blur(3px) contrast(3);
+    transform: scale(0.97);
+  }
+}
+
+/* 회전은 작을 때 끝내서 돌아가는 상자가 스크롤 영역을 넘지 않게 한다. */
+@keyframes press-spin {
+  from {
+    opacity: 0;
+    transform: scale(0.05) rotate(-720deg);
+  }
+  20% {
+    opacity: 1;
+  }
+  70% {
+    transform: scale(0.5) rotate(0deg);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* 비디오 테마: 낡은 테이프를 재생하듯 주사선과 색 번짐 속에서 화면이 튀며 잡힌다. */
+@property --vhs-seconds {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --vhs-minutes {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+
+html[data-theme="vhs"] {
+  --bg: #08080f;
+  --bg-glow: #151530;
+  --box: rgb(12 14 32 / 82%);
+  --line: rgb(255 255 255 / 28%);
+  --text: #eef2ff;
+  --muted: #9aa3c7;
+  --gold: #fff27a;
+  --danger: #ff4f7a;
+  --accent: #5cf2ff;
+  --well: #000;
+  --hover: rgb(92 242 255 / 12%);
+  --glow: none;
+  --radius: 0px;
+  --font-body: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  --aberration: -1px 0 rgb(255 0 80 / 70%), 1px 0 rgb(0 220 255 / 70%);
+  --enter: vhs-glitch 0.7s steps(1, end) backwards;
+  --enter-stagger: 0.14s;
+}
+
+/* 화면 전체에 주사선과 비네트를 덮고, 트래킹 띠가 주기적으로 훑고 지나간다. */
+html[data-theme="vhs"] .shell::after,
+html[data-theme="vhs"] .shell::before {
+  content: "";
+  position: fixed;
+  z-index: 30;
+  pointer-events: none;
+}
+
+html[data-theme="vhs"] .shell::after {
+  inset: 0;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 2px, rgb(0 0 0 / 28%) 2px 3px),
+    radial-gradient(ellipse at center, transparent 60%, rgb(0 0 0 / 55%));
+}
+
+html[data-theme="vhs"] .shell::before {
+  top: -12vh;
+  right: 0;
+  left: 0;
+  height: 9vh;
+  background: linear-gradient(to bottom, transparent, rgb(255 255 255 / 7%) 40%, rgb(255 255 255 / 12%) 50%, rgb(255 255 255 / 7%) 60%, transparent);
+  animation: vhs-tracking 7s linear infinite;
+}
+
+html[data-theme="vhs"] .fx-1 {
+  display: block;
+  position: absolute;
+  inset: -50px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.07;
+  animation: vhs-noise 0.4s steps(3) infinite;
+}
+
+html[data-theme="vhs"] .top {
+  justify-content: space-between;
+}
+
+html[data-theme="vhs"] .top::before,
+html[data-theme="vhs"] .top::after {
+  color: #fff;
+  font-family: var(--font-pixel), monospace;
+  font-size: 18px;
+  text-shadow: var(--aberration);
+}
+
+html[data-theme="vhs"] .top::before {
+  content: "▶ PLAY";
+}
+
+/* 재생 시간은 정수 변수를 움직여 CSS 카운터로만 센다. */
+html[data-theme="vhs"] .top::after {
+  content: "SP " counter(minutes, decimal-leading-zero) ":" counter(seconds, decimal-leading-zero);
+  counter-reset: minutes var(--vhs-minutes) seconds var(--vhs-seconds);
+  animation:
+    vhs-seconds 60s steps(60, end) infinite,
+    vhs-minutes 3600s steps(60, end) infinite;
+}
+
+html[data-theme="vhs"] .brand {
+  color: #fff;
+  font-family: var(--font-pixel), monospace;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-shadow: -2px 0 rgb(255 0 80 / 75%), 2px 0 rgb(0 220 255 / 75%);
+  animation: vhs-jitter 4s steps(1, end) infinite;
+}
+
+html[data-theme="vhs"] .frame-title {
+  color: #fff;
+  font-family: var(--font-pixel), monospace;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-shadow: var(--aberration);
+}
+
+html[data-theme="vhs"] main .box {
+  text-shadow: -0.6px 0 rgb(255 0 80 / 35%), 0.6px 0 rgb(0 220 255 / 35%);
+}
+
+html[data-theme="vhs"] .score-value {
+  font-family: var(--font-pixel), monospace;
+  font-weight: 400;
+  text-shadow: var(--aberration);
+}
+
+html[data-theme="vhs"] .button,
+html[data-theme="vhs"] .chip,
+html[data-theme="vhs"] .gauge,
+html[data-theme="vhs"] .dot {
+  border-radius: 0;
+}
+
+html[data-theme="vhs"] .gauge > div {
+  background: repeating-linear-gradient(90deg, var(--accent) 0 10px, transparent 10px 12px);
+}
+
+@keyframes vhs-glitch {
+  0% {
+    opacity: 0;
+    clip-path: inset(42% 0 50% 0);
+    transform: translateX(-4%) scale(0.98);
+  }
+  12% {
+    opacity: 1;
+    clip-path: inset(8% 0 78% 0);
+    filter: hue-rotate(80deg) saturate(3);
+    transform: translateX(5%);
+  }
+  24% {
+    clip-path: inset(66% 0 6% 0);
+    transform: translateX(-3%);
+  }
+  36% {
+    clip-path: inset(24% 0 44% 0);
+    filter: hue-rotate(-60deg);
+    transform: translateX(2%);
+  }
+  48% {
+    clip-path: inset(0 0 58% 0);
+    filter: none;
+    transform: translateX(-1%);
+  }
+  60% {
+    opacity: 0.7;
+    clip-path: inset(0);
+    transform: translateX(1.5%);
+  }
+  72% {
+    opacity: 1;
+    transform: none;
+  }
+  84% {
+    transform: translateX(-0.5%);
+  }
+  100% {
+    clip-path: inset(0);
+    transform: none;
+  }
+}
+
+@keyframes vhs-tracking {
+  from {
+    transform: translateY(0);
+  }
+  60%,
+  to {
+    transform: translateY(125vh);
+  }
+}
+
+@keyframes vhs-noise {
+  to {
+    transform: translate(-37px, 23px);
+  }
+}
+
+@keyframes vhs-jitter {
+  0%,
+  92%,
+  100% {
+    transform: none;
+  }
+  93% {
+    transform: translateX(3px);
+  }
+  95% {
+    transform: translateX(-2px) skewX(10deg);
+  }
+  97% {
+    transform: translateX(1px);
+  }
+}
+
+@keyframes vhs-seconds {
+  to {
+    --vhs-seconds: 60;
+  }
+}
+
+@keyframes vhs-minutes {
+  to {
+    --vhs-minutes: 60;
+  }
+}
+
+/* 우물 테마: 수면 아래로 물결이 번지고, 상자는 물결처럼 가운데부터 둥글게 드러난다. */
+html[data-theme="well"] {
+  --bg: #06202a;
+  --bg-glow: #0d3a45;
+  --box: rgb(6 38 48 / 62%);
+  --line: rgb(143 227 214 / 38%);
+  --text: #e6f6f4;
+  --muted: #9cc7c2;
+  --gold: #f3d98b;
+  --danger: #f09a8a;
+  --accent: #8fe3d6;
+  --well: rgb(0 0 0 / 30%);
+  --hover: rgb(143 227 214 / 12%);
+  --glow: 0 20px 50px rgb(0 0 0 / 35%);
+  --radius: 22px;
+  --font-body: var(--font-dodum), sans-serif;
+  --enter: ripple-open 1.1s cubic-bezier(0.25, 0.7, 0.3, 1) backwards;
+  --enter-stagger: 0.18s;
+}
+
+html[data-theme="well"] body {
+  background: radial-gradient(ellipse at 50% 45%, var(--bg-glow), var(--bg) 70%);
+  background-color: var(--bg);
+}
+
+html[data-theme="well"] .box {
+  backdrop-filter: blur(6px);
+}
+
+html[data-theme="well"] .fx {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  aspect-ratio: 1;
+  border: 1.5px solid rgb(143 227 214 / 45%);
+  border-radius: 50%;
+  translate: -50% -50%;
+  animation: ripple-ring 12s cubic-bezier(0.2, 0.5, 0.4, 1) infinite;
+}
+
+html[data-theme="well"] .fx-2 {
+  animation-delay: -4s;
+}
+
+html[data-theme="well"] .fx-3 {
+  animation-delay: -8s;
+}
+
+/* 이름 뒤로 달빛이 수면에 일렁인다. */
+html[data-theme="well"] .scene::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 260px;
+  height: 56px;
+  background: radial-gradient(closest-side, rgb(243 217 139 / 28%), transparent);
+  border-radius: 50%;
+  translate: -50% 0;
+  animation: shimmer 5s ease-in-out infinite alternate;
+}
+
+html[data-theme="well"] .brand {
+  display: inline-block;
+  color: var(--accent);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  -webkit-box-reflect: below -6px linear-gradient(transparent 35%, rgb(0 0 0 / 40%));
+}
+
+html[data-theme="well"] .button {
+  border-radius: 999px;
+}
+
+html[data-theme="well"] .gauge {
+  border-radius: 999px;
+}
+
+html[data-theme="well"] .gauge > div {
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+}
+
+@keyframes ripple-open {
+  from {
+    opacity: 0.4;
+    clip-path: circle(0% at 50% 50%);
+    filter: blur(6px);
+  }
+  70% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    clip-path: circle(72% at 50% 50%);
+  }
+}
+
+@keyframes ripple-ring {
+  from {
+    width: 0;
+    opacity: 0.8;
+  }
+  to {
+    width: 150vmax;
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    opacity: 0.6;
+    transform: scale(1.3, 0.8);
+  }
+}
+
+/* 데스크톱 테마: 오래된 운영체제처럼 창이 테두리만 남긴 채 단계적으로 커지며 열린다. */
+html[data-theme="desktop"] {
+  --bg: #5a5fa8;
+  --bg-glow: #5a5fa8;
+  --box: #c9c9c9;
+  --line: #808080;
+  --text: #fff;
+  --muted: #e3e4ff;
+  --gold: #fff;
+  --danger: #ffb4b4;
+  --accent: #fff;
+  --well: #fff;
+  --hover: rgb(27 42 140 / 12%);
+  --glow: none;
+  --radius: 0px;
+  --font-body: var(--font-pixel), monospace;
+  --box-size: 16px;
+  --bevel-out: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  --bevel-in: inset -1px -1px #fff, inset 1px 1px #808080, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+  --enter: window-open 0.32s steps(6, end) backwards;
+  --enter-inner: window-content 0.01s steps(1, end) backwards;
+  --enter-inner-delay: 0.3s;
+  -webkit-font-smoothing: none;
+  color-scheme: light;
+}
+
+html[data-theme="desktop"] body {
+  background: repeating-conic-gradient(#565ba3 0 25%, #5e63ad 0 50%) 0 0 / 4px 4px;
+}
+
+/* 작업 표시줄 자리만큼 화면을 줄인다. */
+html[data-theme="desktop"] .shell {
+  height: calc(100vh - 32px);
+  height: calc(100dvh - 32px);
+}
+
+/* 창과 버튼 안은 회색 바탕이라 검은 글자로 다시 정한다. */
+html[data-theme="desktop"] :is(.box, .card, .button) {
+  --text: #111;
+  --muted: #444;
+  --gold: #1b2a8c;
+  --accent: #1b2a8c;
+  --danger: #a01818;
+  --line: #808080;
+  color: var(--text);
+}
+
+html[data-theme="desktop"] .box {
+  padding: 3px;
+  border: 0;
+  box-shadow: var(--bevel-out);
+}
+
+html[data-theme="desktop"] .frame-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 3px 2px 6px;
+  background: linear-gradient(90deg, #1b2a8c, #5470d8);
+  color: #fff;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+html[data-theme="desktop"] .frame-title::after {
+  content: "×";
+  flex: none;
+  width: 16px;
+  height: 14px;
+  background: var(--box);
+  box-shadow: var(--bevel-out);
+  color: #111;
+  font-size: 12px;
+  line-height: 14px;
+  text-align: center;
+}
+
+html[data-theme="desktop"] .frame-body,
+html[data-theme="desktop"] .side .frame-body {
+  padding: 8px 10px;
+}
+
+html[data-theme="desktop"] main > .box .frame-body {
+  margin-top: 4px;
+  padding: 14px 16px;
+  background: #fff;
+  box-shadow: var(--bevel-in);
+}
+
+html[data-theme="desktop"] .brand {
+  padding: 0 6px;
+  background: #1b2a8c;
+  outline: 1px dotted #fff;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+html[data-theme="desktop"] .button {
+  padding: 4px 14px;
+  background: var(--box);
+  border: 0;
+  border-radius: 0;
+  box-shadow: var(--bevel-out);
+}
+
+html[data-theme="desktop"] .button:hover:not(:disabled) {
+  background: var(--box);
+  outline: 1px dotted #111;
+  outline-offset: -5px;
+}
+
+html[data-theme="desktop"] .button:active:not(:disabled) {
+  box-shadow: var(--bevel-in);
+}
+
+html[data-theme="desktop"] .button:disabled {
+  color: #808080;
+  text-shadow: 1px 1px #fff;
+}
+
+html[data-theme="desktop"] .wish-input,
+html[data-theme="desktop"] .field {
+  padding: 4px 6px;
+  background: #fff;
+  border: 0;
+  border-radius: 0;
+  box-shadow: var(--bevel-in);
+}
+
+html[data-theme="desktop"] .gauge {
+  height: 20px;
+  padding: 2px;
+  background: #fff;
+  border: 0;
+  border-radius: 0;
+  box-shadow: var(--bevel-in);
+}
+
+html[data-theme="desktop"] .gauge > div {
+  background: repeating-linear-gradient(90deg, #1b2a8c 0 10px, transparent 10px 12px);
+}
+
+html[data-theme="desktop"] .chip,
+html[data-theme="desktop"] .dot {
+  border-radius: 0;
+}
+
+.taskbar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 3px 4px;
+  background: #c9c9c9;
+  box-shadow: inset 0 1px #dfdfdf, inset 0 2px #fff;
+  color: #111;
+  font-family: var(--font-pixel), monospace;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.taskbar-start,
+.taskbar-task {
+  padding: 0 8px;
+  box-shadow: var(--bevel-out);
+}
+
+.taskbar-start {
+  font-weight: 700;
+}
+
+.taskbar-task {
+  min-width: 140px;
+  background: #e6e6e6;
+  box-shadow: var(--bevel-in);
+}
+
+.taskbar-clock {
+  margin-left: auto;
+  padding: 0 10px;
+  box-shadow: inset 1px 1px #808080, inset -1px -1px #fff;
+}
+
+@keyframes window-open {
+  from {
+    background: transparent;
+    box-shadow: 0 0 0 1px #111;
+    transform: scale(0.1);
+  }
+  99% {
+    background: transparent;
+    box-shadow: 0 0 0 1px #111;
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes window-content {
+  from {
+    visibility: hidden;
+  }
+}
+
+/* 카지노 테마: 슬롯 릴이 돌다 멈추듯 상자가 위에서 쏟아져 내려와 차례로 멈춘다. */
+html[data-theme="casino"] {
+  --bg: #0b3d2c;
+  --bg-glow: #13563f;
+  --box: #0a2a20;
+  --line: #b8912f;
+  --text: #fdf6e3;
+  --muted: #b9cbbf;
+  --gold: #f5c542;
+  --danger: #ff5a4f;
+  --accent: #ff8a7d;
+  --well: #061a13;
+  --hover: rgb(245 197 66 / 14%);
+  --glow: 0 16px 36px rgb(0 0 0 / 45%);
+  --radius: 16px;
+  --font-body: var(--font-dodum), sans-serif;
+  --enter: reel-drop 0.8s cubic-bezier(0.3, 0, 0.3, 1) backwards;
+  --enter-stagger: 0.22s;
+}
+
+html[data-theme="casino"] body {
+  background: radial-gradient(ellipse at 50% 40%, var(--bg-glow), var(--bg) 70%);
+  background-color: var(--bg);
+}
+
+html[data-theme="casino"] :where(.side > .box, main > *) {
+  transform-origin: 50% 100%;
+}
+
+html[data-theme="casino"] main > .box {
+  padding: 12px;
+  border: 2px solid var(--gold);
+}
+
+/* 가운데 상자 둘레에 전구를 달고 번갈아 깜빡인다. */
+html[data-theme="casino"] main > .box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 12px;
+  background: radial-gradient(circle, #ffe9a3 0 2.5px, rgb(255 233 163 / 0%) 3.5px) 0 0 / 16px 16px;
+  border-radius: inherit;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
+  animation: marquee 0.8s steps(2, end) infinite;
+}
+
+html[data-theme="casino"] .frame-title {
+  color: var(--gold);
+  font-family: var(--font-display), sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-shadow: 0 2px 0 #7a1f12;
+}
+
+html[data-theme="casino"] .brand {
+  color: var(--gold);
+  font-family: var(--font-display), sans-serif;
+  font-size: 34px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-shadow: 0 3px 0 #a3271a, 0 0 18px rgb(245 197 66 / 45%);
+}
+
+html[data-theme="casino"] .brand::before {
+  content: "♠ ";
+}
+
+html[data-theme="casino"] .brand::after {
+  content: " ♦";
+}
+
+html[data-theme="casino"] .score-value {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 400;
+  text-shadow: 0 3px 0 #a3271a;
+}
+
+html[data-theme="casino"] .score-card[data-tier="high"] .score-value::after {
+  content: " JACKPOT!";
+  color: var(--danger);
+  font-size: 0.5em;
+  animation: blink 0.6s steps(2) infinite;
+}
+
+html[data-theme="casino"] .button:not(:disabled) {
+  background: linear-gradient(#f5c542, #c9971f);
+  border-color: #f5c542;
+  color: #2a1b00;
+  font-weight: 700;
+}
+
+html[data-theme="casino"] .button:hover:not(:disabled) {
+  background: linear-gradient(#ffd85e, #d9a72a);
+}
+
+html[data-theme="casino"] .button,
+html[data-theme="casino"] .gauge {
+  border-radius: 999px;
+}
+
+html[data-theme="casino"] .chip {
+  border: 2px dashed var(--gold);
+  border-radius: 999px;
+}
+
+@keyframes reel-drop {
+  0% {
+    filter: blur(5px);
+    transform: translateY(-110%);
+  }
+  70% {
+    filter: blur(1.5px);
+    transform: translateY(0) scaleY(1);
+  }
+  82% {
+    filter: none;
+    transform: scaleY(0.95);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes marquee {
+  to {
+    background-position: 16px 16px;
+  }
+}
+
+/* 만화 테마: 칸이 쾅 하고 내려앉고, 가운데 칸에는 효과음이 터진다. */
+html[data-theme="comic"] {
+  --bg: #fff8e1;
+  --bg-glow: #fff8e1;
+  --box: #fff;
+  --line: #111;
+  --text: #111;
+  --muted: #4a4a4a;
+  --gold: #e63946;
+  --danger: #e63946;
+  --accent: #1d4ed8;
+  --well: #f1f1f1;
+  --hover: rgb(255 225 77 / 45%);
+  --glow: 6px 6px 0 #111;
+  --radius: 4px;
+  --font-body: var(--font-hand), var(--font-dodum), sans-serif;
+  --box-size: 20px;
+  --enter: panel-slam 0.55s ease-out backwards;
+  --enter-stagger: 0.1s;
+  color-scheme: light;
+}
+
+html[data-theme="comic"] .fx-1,
+html[data-theme="comic"] .fx-2 {
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+html[data-theme="comic"] .fx-1 {
+  background: radial-gradient(circle, rgb(29 78 216 / 30%) 1.6px, transparent 2px) 0 0 / 11px 11px;
+  mask-image: linear-gradient(135deg, #000, transparent 40%);
+}
+
+html[data-theme="comic"] .fx-2 {
+  background: radial-gradient(circle, rgb(230 57 70 / 28%) 1.6px, transparent 2px) 0 0 / 11px 11px;
+  mask-image: linear-gradient(-45deg, #000, transparent 35%);
+}
+
+html[data-theme="comic"] .side {
+  gap: 18px;
+}
+
+html[data-theme="comic"] .box {
+  border: 3px solid var(--line);
+}
+
+html[data-theme="comic"] .side .box {
+  font-size: 17px;
+}
+
+html[data-theme="comic"] main .box {
+  font-weight: 700;
+}
+
+html[data-theme="comic"] .side-left > .box:nth-child(odd) {
+  rotate: -0.8deg;
+}
+
+html[data-theme="comic"] .side-left > .box:nth-child(even),
+html[data-theme="comic"] .side-right > .box {
+  rotate: 0.6deg;
+}
+
+/* 칸 왼쪽 위 모서리에 노란 해설 상자를 붙인다. */
+html[data-theme="comic"] .frame-title {
+  align-self: flex-start;
+  padding: 0 12px;
+  background: #ffe14d;
+  border-right: 3px solid var(--line);
+  border-bottom: 3px solid var(--line);
+  color: var(--line);
+  font-family: var(--font-display), sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+html[data-theme="comic"] .brand {
+  position: relative;
+  isolation: isolate;
+  padding: 2px 18px;
+  color: var(--gold);
+  font-family: var(--font-display), sans-serif;
+  font-size: 38px;
+  font-weight: 400;
+  -webkit-text-stroke: 1.5px #111;
+  paint-order: stroke fill;
+  text-shadow: 3px 3px 0 #111;
+}
+
+html[data-theme="comic"] .brand::before {
+  content: "";
+  position: absolute;
+  inset: -10px -12px;
+  z-index: -1;
+  background: #ffe14d;
+  clip-path: polygon(50% 0, 58% 22%, 78% 6%, 74% 30%, 100% 26%, 82% 48%, 100% 70%, 74% 68%, 80% 96%, 58% 78%, 48% 100%, 40% 76%, 18% 94%, 24% 66%, 0 72%, 16% 48%, 0 24%, 26% 30%, 22% 4%, 42% 22%);
+}
+
+html[data-theme="comic"] main > .box::after {
+  content: "쾅!";
+  position: absolute;
+  top: 6px;
+  right: 16px;
+  color: var(--gold);
+  font-family: var(--font-display), sans-serif;
+  font-size: 34px;
+  line-height: 1;
+  -webkit-text-stroke: 1.5px #111;
+  paint-order: stroke fill;
+  text-shadow: 2px 2px 0 #111;
+  rotate: 12deg;
+  opacity: 0;
+  pointer-events: none;
+  animation: sound-effect 1.4s 0.35s ease-out;
+}
+
+html[data-theme="comic"] .score-value {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 400;
+  -webkit-text-stroke: 1.5px #111;
+  paint-order: stroke fill;
+  text-shadow: 3px 3px 0 #111;
+}
+
+html[data-theme="comic"] .button {
+  background: #ffe14d;
+  border: 2.5px solid #111;
+  border-radius: 6px;
+  box-shadow: 3px 3px 0 #111;
+  color: #111;
+  font-family: var(--font-display), sans-serif;
+}
+
+html[data-theme="comic"] .button:hover:not(:disabled) {
+  background: #ffd21f;
+}
+
+html[data-theme="comic"] .button:active:not(:disabled) {
+  box-shadow: 1px 1px 0 #111;
+  transform: translate(2px, 2px);
+}
+
+html[data-theme="comic"] .button:disabled {
+  background: #eee;
+  border-color: #888;
+  box-shadow: none;
+  color: #888;
+}
+
+html[data-theme="comic"] .gauge {
+  border: 2.5px solid #111;
+}
+
+html[data-theme="comic"] .chip {
+  background: #ffe14d;
+  border: 2px solid #111;
+  color: #111;
+}
+
+@keyframes panel-slam {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-8deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.02) rotate(0.5deg);
+  }
+  80% {
+    transform: scale(0.99) rotate(-0.2deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes sound-effect {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+  35% {
+    transform: scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+
+@media (max-width: 899px) {
+  html[data-theme="talisman"] .brand {
+    font-size: 34px;
+  }
+
+  html[data-theme="newspaper"] .brand {
+    font-size: 34px;
+  }
+
+  html[data-theme="newspaper"] .top::after {
+    letter-spacing: 0.05em;
+  }
+
+  /* 좁은 화면에서는 사이드바 토글이 헤더 양끝을 차지하므로 재생 표시를 숨긴다. */
+  html[data-theme="vhs"] .top::before,
+  html[data-theme="vhs"] .top::after {
+    display: none;
+  }
+
+  html[data-theme="contract"] .brand::before,
+  html[data-theme="contract"] .brand::after {
+    width: 16px;
+    margin: 0 8px;
+  }
+
+  html[data-theme="casino"] .brand {
+    font-size: 28px;
+  }
+
+  html[data-theme="comic"] .brand {
+    font-size: 30px;
+  }
+
+  html[data-theme="desktop"] .taskbar-task {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .frame-body {
+    padding: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --enter: none !important;
+    --enter-main: none !important;
+    --enter-rest: none !important;
+    --enter-inner: none !important;
+  }
+
+  .fx,
+  .scene::before,
+  .shell::before,
+  .brand,
+  .top::before,
+  .top::after,
+  main > .box::before,
+  main > .box::after {
+    animation: none !important;
+  }
+
+  .cursor,
+  .waiting,
+  html[data-theme="terminal"] .edge,
+  html[data-opening] main,
+  html[data-opening] .side > * {
+    animation: none;
+  }
+
+  .meteor {
+    display: none;
+  }
+
+  .side {
+    transition: none;
+  }
+
+  .gauge > div {
+    transition: none;
+  }
+}
+
+/* 로그아웃은 게이트웨이로 보내는 폼이라 링크처럼 보이게 한다. */
+.panel-inline-form {
+  display: inline;
+}

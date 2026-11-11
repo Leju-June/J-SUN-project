@@ -1,0 +1,8 @@
+.git
+.github
+.next
+.venv
+.claude
+.env
+.env.local
+node_modules

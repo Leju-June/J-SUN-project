@@ -1,0 +1,13 @@
+# 개발용. 호스트에서 돌고 있는 gateway(3000)와 jeenee(3001)를 8080 하나로 묶는다.
+:8080 {
+	@jeenee path /jeenee /jeenee/*
+	handle @jeenee {
+		reverse_proxy host.docker.internal:3001 {
+			# 스토리 스트리밍이 버퍼에 묶이지 않게 바로 내보낸다.
+			flush_interval -1
+		}
+	}
+	handle {
+		reverse_proxy host.docker.internal:3000
+	}
+}

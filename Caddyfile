@@ -1,7 +1,0 @@
-{$DOMAIN} {
-	reverse_proxy app:3000 {
-		header_up X-Real-IP {remote_host}
-		# 스토리 스트리밍이 버퍼에 묶이지 않게 바로 내보낸다.
-		flush_interval -1
-	}
-}

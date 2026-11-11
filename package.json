@@ -1,38 +1,21 @@
 {
-  "name": "jeenee",
+  "name": "j-sun",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "install:all": "npm --prefix apps/gateway install && npm --prefix apps/jeenee install",
+    "up": "docker compose up -d --wait",
+    "down": "docker compose down",
     "db:up": "docker compose up -d --wait db",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx --env-file-if-exists=.env.local scripts/migrate.ts",
-    "db:seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^1.5.0",
-    "@kfonts/neodgm": "^0.5.0",
-    "drizzle-orm": "^0.45.4",
-    "next": "^16.4.5",
-    "pg": "^8.23.1",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "tsx": "^4.23.15",
-    "zod": "^4.6.7"
+    "db:migrate": "npm --prefix apps/gateway run db:migrate && npm --prefix apps/jeenee run db:migrate",
+    "db:seed": "npm --prefix apps/jeenee run db:seed",
+    "dev": "concurrently -n gateway,jeenee -c cyan,magenta \"npm --prefix apps/gateway run dev\" \"npm --prefix apps/jeenee run dev\"",
+    "build": "npm --prefix apps/gateway run build && npm --prefix apps/jeenee run build",
+    "start": "concurrently -n gateway,jeenee -c cyan,magenta \"npm --prefix apps/gateway run start\" \"npm --prefix apps/jeenee run start -- -p 3001\"",
+    "typecheck": "npm --prefix apps/gateway run typecheck && npm --prefix apps/jeenee run typecheck",
+    "test": "npm --prefix apps/gateway test && npm --prefix apps/jeenee test"
   },
   "devDependencies": {
-    "@types/node": "^26.6.6",
-    "@types/pg": "^8.23.1",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "drizzle-kit": "^0.31.11",
-    "sharp": "^0.35.5",
-    "typescript": "^7.0.2",
-    "vitest": "^5.1.0"
+    "concurrently": "^9.2.1"
   }
 }

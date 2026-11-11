@@ -1,20 +1,30 @@
-# 로컬 개발용 DB. 운영 구성은 docker-compose.prod.yml을 사용한다.
+# 로컬 개발용. 운영 구성은 docker-compose.prod.yml을 사용한다.
+# 앱들은 호스트에서 `npm run dev`로 띄우고, proxy가 http://localhost:8080 에서 하나로 묶어 준다.
 services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_USER: jeenee
-      POSTGRES_PASSWORD: jeenee
-      POSTGRES_DB: jeenee
+      POSTGRES_USER: jsun
+      POSTGRES_PASSWORD: jsun
+      POSTGRES_DB: jsun
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
-      - jeenee-db:/var/lib/postgresql/data
+      - jsun-db:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jeenee"]
+      test: ["CMD-SHELL", "pg_isready -U jsun"]
       interval: 3s
       timeout: 3s
       retries: 20
 
+  proxy:
+    image: caddy:2
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./infra/Caddyfile.dev:/etc/caddy/Caddyfile:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 volumes:
-  jeenee-db:
+  jsun-db:

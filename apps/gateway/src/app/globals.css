@@ -1,0 +1,246 @@
+:root {
+  --bg: #000;
+  --text: #f4f4f4;
+  --muted: #8f8f8f;
+  --line: #262626;
+  --line-strong: #3a3a3a;
+  --well: #0b0b0b;
+  --danger: #ff8a80;
+  --radius: 14px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+main {
+  width: min(960px, 100% - 32px);
+  margin: 0 auto;
+  padding: 24px 0 80px;
+}
+
+/* 머리글 */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(960px, 100% - 32px);
+  margin: 0 auto;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.who {
+  color: var(--muted);
+}
+
+.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: #fff;
+}
+
+/* 로비 */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 56px 0 40px;
+  text-align: center;
+}
+
+.hero .sun-mark {
+  filter: drop-shadow(0 0 28px rgb(255 255 255 / 45%));
+}
+
+.hero h1 {
+  margin: 12px 0 0;
+  font-size: 2rem;
+  letter-spacing: 0.18em;
+}
+
+.hero p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.services {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 160px;
+  padding: 22px 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--well);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    transform 0.15s;
+}
+
+a.card:hover {
+  border-color: #fff;
+  transform: translateY(-2px);
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.card .go {
+  margin-top: auto;
+  padding-top: 12px;
+  font-size: 0.9rem;
+}
+
+.card.empty {
+  border-style: dashed;
+  border-color: var(--line-strong);
+  background: transparent;
+  color: var(--muted);
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* 로그인·회원가입 */
+.sheet {
+  width: min(400px, 100%);
+  margin: 40px auto 0;
+  padding: 28px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--well);
+}
+
+.sheet h1 {
+  margin: 0 0 20px;
+  font-size: 1.4rem;
+}
+
+.sheet form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sheet label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.field {
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: #000;
+  color: var(--text);
+  font: inherit;
+}
+
+.field:focus {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+.button {
+  margin-top: 6px;
+  padding: 11px 14px;
+  border: 1px solid #fff;
+  border-radius: 8px;
+  background: #fff;
+  color: #000;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.92rem;
+}
+
+.switch {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 36px 0 28px;
+  }
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+}
