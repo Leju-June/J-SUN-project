@@ -1,16 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { daysUntilResetKst, readStored, writeStored } from "@/lib/client-prefs";
 import type { WishEvent } from "@/lib/run-wish";
 import { Frame } from "./Frame";
 import { ScoreCard } from "./ScoreCard";
 import { StoryViewer } from "./StoryViewer";
 import { useTypewriter } from "./Typewriter";
+import { useOnline } from "./useClientState";
 import { notifyChanged } from "./useLiveData";
 
 const INTRO = "너의 소원을 말해봐. 내가 모두 이루어줄게.";
 const MAX_LENGTH = 200;
+const NEAR_LIMIT = 180;
+const DRAFT_KEY = "jeenee-draft";
 const WAITING_LINES = [
   "지니가 소원을 곱씹는 중...",
   "한 글자씩 뜯어보는 중...",
@@ -29,7 +33,12 @@ const STOP_MESSAGES: Record<string, string> = {
 type Result = { score: number; line: string; achievements: { code: string; title: string }[] };
 type Stage = "ask" | "waiting" | "story";
 
-function WaitingBox() {
+const usedUpMessage = () => {
+  const days = daysUntilResetKst();
+  return `이번 주 소원을 모두 썼다. 램프는 ${days === 1 ? "내일" : `${days}일 뒤`} 월요일에 다시 깨어난다.`;
+};
+
+function WaitingBox({ wish }: { wish: string }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -39,6 +48,9 @@ function WaitingBox() {
 
   return (
     <Frame title="지니의 램프">
+      <p className="wish-echo">
+        <span>내 소원은...</span> {wish}
+      </p>
       <p className="waiting" aria-live="polite">
         {WAITING_LINES[index]}
       </p>
@@ -59,7 +71,8 @@ export function WishFlow() {
   const [replayed, setReplayed] = useState(false);
   const [mock, setMock] = useState(false);
   const [quota, setQuota] = useState<{ remaining: number; allowance: number } | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const online = useOnline();
 
   const intro = useTypewriter(stage === "ask" ? INTRO : "", false);
 
@@ -76,6 +89,35 @@ export function WishFlow() {
   useEffect(() => {
     if (stage === "ask" && intro.finished) inputRef.current?.focus();
   }, [stage, intro.finished]);
+
+  // 새로고침하거나 실수로 닫아도 쓰던 소원이 남아 있게 한다.
+  useEffect(() => {
+    const draft = readStored("session", DRAFT_KEY);
+    if (draft) setText(draft.slice(0, MAX_LENGTH));
+  }, []);
+
+  const changeText = (value: string) => {
+    const next = value.replace(/[\r\n]+/g, " ");
+    setText(next);
+    writeStored("session", DRAFT_KEY, next || null);
+  };
+
+  // 입력란 높이를 내용에 맞춘다. 한 줄에서 시작해 CSS의 max-height까지 늘어난다.
+  useLayoutEffect(() => {
+    const input = inputRef.current;
+    if (!input) return;
+    input.style.height = "auto";
+    input.style.height = `${input.scrollHeight + 1}px`;
+  }, [text, stage, intro.finished]);
+
+  // 이야기를 받는 중에 창을 닫으려 하면 한 번 되묻는다.
+  const receiving = stage === "waiting" || (stage === "story" && !complete);
+  useEffect(() => {
+    if (!receiving) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [receiving]);
 
   const handleEvent = (event: WishEvent) => {
     switch (event.type) {
@@ -117,7 +159,7 @@ export function WishFlow() {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const wish = text.trim();
-    if (wish.length < 2) return;
+    if (wish.length < 2 || !online) return;
 
     setMessage(null);
     setScenes([]);
@@ -153,8 +195,15 @@ export function WishFlow() {
     }
   };
 
+  // 줄바꿈 대신 바로 빈다. 한글을 조합하는 중의 Enter는 글자 확정이므로 넘긴다.
+  const onInputKey = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing || event.keyCode === 229) return;
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  };
+
   const reset = () => {
-    setText("");
+    changeText("");
     setMessage(null);
     setStage("ask");
     intro.restart();
@@ -175,7 +224,7 @@ export function WishFlow() {
     }
   };
 
-  if (stage === "waiting") return <WaitingBox />;
+  if (stage === "waiting") return <WaitingBox wish={text.trim()} />;
 
   if (stage === "story") {
     const ending = result && (
@@ -229,31 +278,41 @@ export function WishFlow() {
         <form className="wish-form" onSubmit={submit}>
           <div className="wish-row">
             <label htmlFor="wish">내 소원은...</label>
-            <input
+            <textarea
               id="wish"
               ref={inputRef}
               className="wish-input"
+              rows={1}
               value={text}
               maxLength={MAX_LENGTH}
               autoComplete="off"
+              enterKeyHint="send"
               disabled={noneLeft}
-              onChange={(event) => setText(event.target.value)}
+              onChange={(event) => changeText(event.target.value)}
+              onKeyDown={onInputKey}
             />
           </div>
           <div className="wish-meta">
             <span>
-              {noneLeft
-                ? "이번 주 소원을 모두 썼다. 램프는 월요일에 다시 깨어난다."
-                : quota && `이번 주 남은 소원 ${quota.remaining}개`}
-              {!noneLeft && ` · ${text.length} / ${MAX_LENGTH}`}
+              {noneLeft ? usedUpMessage() : quota && `이번 주 남은 소원 ${quota.remaining}개 · `}
+              {!noneLeft && (
+                <span className={text.length >= NEAR_LIMIT ? "wish-count near-limit" : "wish-count"}>
+                  {text.length} / {MAX_LENGTH}
+                </span>
+              )}
             </span>
-            <button type="submit" className="button" disabled={noneLeft || text.trim().length < 2}>
+            <button type="submit" className="button" disabled={noneLeft || !online || text.trim().length < 2}>
               빌기
             </button>
           </div>
         </form>
       )}
       {message && <p className="notice">{message}</p>}
+      {!online && (
+        <p className="notice" role="status">
+          연결이 끊겼다. 램프가 네 목소리를 듣지 못한다. 쓰던 소원은 그대로 둘게.
+        </p>
+      )}
     </Frame>
   );
 }

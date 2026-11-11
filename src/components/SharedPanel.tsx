@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { Frame } from "./Frame";
-import { useLiveData } from "./useLiveData";
+import { useLiveResource } from "./useLiveData";
 
 type Shared = { items: { slug: string; text: string; score: number }[] };
 
 export function SharedPanel() {
-  const shared = useLiveData<Shared>("/api/shared");
+  const { data: shared, failed, reload } = useLiveResource<Shared>("/api/shared");
 
   return (
     <Frame title="공유된 이야기" className="fill">
@@ -16,6 +16,15 @@ export function SharedPanel() {
           이번 주의 소원
         </Link>
       </p>
+      {!shared && !failed && <p className="notice">불러오는 중...</p>}
+      {failed && (
+        <p className="notice">
+          {shared ? "새 이야기를 불러오지 못했다. " : "이야기를 불러오지 못했다. "}
+          <button type="button" className="link-button panel-link" onClick={reload}>
+            다시 시도
+          </button>
+        </p>
+      )}
       {shared?.items.length === 0 && <p className="notice">아직 공유된 소원이 없다.</p>}
       <ul className="panel-list shared-list">
         {shared?.items.map((item) => (
