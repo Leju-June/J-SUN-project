@@ -84,7 +84,8 @@ a {
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
   color: inherit;
 }
@@ -357,12 +358,13 @@ main > .box {
 
 .wish-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 12px;
 }
 
 .wish-row label {
+  padding: 8px 0;
   color: var(--gold);
   white-space: nowrap;
 }
@@ -376,6 +378,14 @@ main > .box {
   border-bottom: 1px solid var(--line);
   border-radius: 0;
   outline: none;
+  /* 긴 소원은 줄을 바꿔 보여주고, 높이는 WishFlow가 내용에 맞춘다. */
+  display: block;
+  max-height: 7.2em;
+  line-height: 1.8;
+  resize: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
 
 .wish-input:focus {
@@ -385,6 +395,19 @@ main > .box {
 .wish-input::placeholder {
   color: var(--muted);
   opacity: 0.6;
+}
+
+.wish-count.near-limit {
+  color: var(--danger);
+}
+
+.wish-echo {
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
+}
+
+.wish-echo span {
+  color: var(--gold);
 }
 
 .wish-meta {
@@ -448,14 +471,67 @@ main > .box {
 }
 
 .dot {
+  position: relative;
   width: 8px;
   height: 8px;
+  padding: 0;
+  border: 0;
   border-radius: 50%;
   background: var(--line);
+  cursor: pointer;
+}
+
+/* 점은 작게 보이되 손가락으로 누를 수 있게 닿는 범위만 넓힌다. */
+.dot::after {
+  content: "";
+  position: absolute;
+  inset: -10px -3px;
+}
+
+.dot:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .dot.active {
   background: var(--gold);
+}
+
+.dot:focus-visible,
+.speed-option:focus-visible {
+  outline: 1px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.reader-tools {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.speed {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.speed-option[aria-pressed="true"] {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* 키보드 안내는 마우스와 키보드를 쓰는 기기에서만 보여준다. */
+@media (hover: none), (pointer: coarse) {
+  .key-hint {
+    display: none;
+  }
 }
 
 .waiting {
@@ -892,6 +968,7 @@ html[data-theme="terminal"] .wish-input {
 
 html[data-theme="terminal"] .notice,
 html[data-theme="terminal"] .wish-meta,
+html[data-theme="terminal"] .reader-tools,
 html[data-theme="terminal"] .chip,
 html[data-theme="terminal"] table {
   font-size: 16px;
@@ -1132,7 +1209,8 @@ html[data-theme="fairytale"] main > :not(.box) {
 }
 
 html[data-theme="fairytale"] main .notice,
-html[data-theme="fairytale"] main .wish-meta {
+html[data-theme="fairytale"] main .wish-meta,
+html[data-theme="fairytale"] main .reader-tools {
   font-size: 15px;
 }
 
