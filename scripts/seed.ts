@@ -4,11 +4,12 @@ import { SEED_KEYWORDS } from "./keywords";
 
 let count = 0;
 for (const [slot, seeds] of Object.entries(SEED_KEYWORDS)) {
-  for (const [word, description, severity] of seeds) {
+  for (const [word, description, severity, options = {}] of seeds) {
+    const fields = { description, slot, severity, baseWeight: options.w ?? 1, domains: options.d ?? [], motif: options.m ?? null };
     await db
       .insert(keywords)
-      .values({ word, description, slot, severity })
-      .onConflictDoUpdate({ target: keywords.word, set: { description, slot, severity } });
+      .values({ word, ...fields })
+      .onConflictDoUpdate({ target: keywords.word, set: fields });
     count++;
   }
 }

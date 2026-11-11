@@ -9,7 +9,14 @@ export type Analysis = {
   narrative: number; // N: 이야기로 풀어낼 거리가 있는가
 };
 
-export type StoryTier = { name: "short" | "medium" | "long"; minChars: number; maxChars: number; minScenes: number; maxScenes: number };
+export type StoryTier = {
+  name: "short" | "medium" | "long";
+  minChars: number;
+  maxChars: number;
+  minScenes: number;
+  maxScenes: number;
+  styleSlots: number; // 이 분량에 담을 수 있는 연출 키워드 수
+};
 
 export type ScoreBreakdown = {
   analysis: Analysis;
@@ -47,9 +54,9 @@ export function computeScore(misfortune: number, quality: number) {
 }
 
 export function storyTier(quality: number): StoryTier {
-  if (quality < 40) return { name: "short", minChars: 800, maxChars: 1200, minScenes: 3, maxScenes: 4 };
-  if (quality < 70) return { name: "medium", minChars: 1500, maxChars: 2200, minScenes: 5, maxScenes: 7 };
-  return { name: "long", minChars: 3000, maxChars: 4000, minScenes: 8, maxScenes: 12 };
+  if (quality < 40) return { name: "short", minChars: 800, maxChars: 1200, minScenes: 3, maxScenes: 4, styleSlots: 1 };
+  if (quality < 70) return { name: "medium", minChars: 1500, maxChars: 2200, minScenes: 5, maxScenes: 7, styleSlots: 2 };
+  return { name: "long", minChars: 3000, maxChars: 4000, minScenes: 8, maxScenes: 12, styleSlots: 3 };
 }
 
 export function storyDirection(misfortune: number, taboo: Taboo) {

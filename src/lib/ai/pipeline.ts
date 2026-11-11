@@ -1,7 +1,7 @@
 import { setTimeout as sleep } from "node:timers/promises";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
-import type { Shortlist } from "../draw";
+import type { Keyword, Shortlist } from "../draw";
 import { TABOOS, type Analysis, type StoryTier } from "../scoring";
 import { anthropic, ANALYSIS_MODEL, estimateCost, mockMode, RefusalError, STORY_MODEL } from "./client";
 import { mockAnalysis, mockPicks, mockReview, mockStory } from "./mock";
@@ -43,12 +43,16 @@ export async function analyzeWish(wish: string, shortlist: Shortlist) {
   return { analysis, picks, costUsd: estimateCost(ANALYSIS_MODEL, response.usage) };
 }
 
-type StoryInput = { wish: string; keywords: string[]; direction: string; tier: StoryTier };
+export type StoryInput = { wish: string; keywords: Keyword[]; direction: string; tier: StoryTier };
 
 /** 스토리를 생성하며 조각마다 onText를 호출하고, 추정 비용을 반환한다. */
 export async function generateStory(input: StoryInput, onText: (text: string) => void) {
   if (mockMode()) {
-    for (const chunk of mockStory(input.wish, input.keywords, input.tier).match(/[\s\S]{1,12}/g) ?? []) {
+    for (const chunk of mockStory(
+      input.wish,
+      input.keywords.map((keyword) => keyword.word),
+      input.tier,
+    ).match(/[\s\S]{1,12}/g) ?? []) {
       onText(chunk);
       await sleep(30);
     }

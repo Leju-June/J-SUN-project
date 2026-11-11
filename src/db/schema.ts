@@ -24,9 +24,16 @@ export const keywords = pgTable("keywords", {
   id: bigserial("id", { mode: "number" }).primaryKey(),
   word: text("word").notNull().unique(),
   description: text("description").notNull(),
-  slot: text("slot").notNull(), // loophole | price | material | ending
+  slot: text("slot").notNull(), // loophole | price | material | ending | genie | twist | voice
   baseWeight: real("base_weight").notNull().default(1),
   severity: smallint("severity").notNull(),
+  // 이 영역의 소원에서 더 자주 후보에 오른다. 비어 있으면 어느 소원에나 같다.
+  domains: text("domains")
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  // 같은 모티프의 키워드는 한 이야기에 겹쳐 뽑히지 않게 한다.
+  motif: text("motif"),
 });
 
 export const users = pgTable("users", {

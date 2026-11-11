@@ -1,10 +1,11 @@
-import { and, desc, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { keywords, wishes, wishKeywords } from "@/db/schema";
 import { RefusalError, mockMode } from "./ai/client";
 import { analyzeWish, generateStory } from "./ai/pipeline";
 import { ACHIEVEMENTS } from "./achievements";
-import { drawKeywords, sampleCandidates, type RecentUses } from "./draw";
+import { detectDomains } from "./domains";
+import { decayedUses, drawKeywords, sampleCandidates, severityAverage as averageSeverity, type RecentUses } from "./draw";
 import { earnedAchievements } from "./earned-achievements";
 import { releaseQuota, reserveQuota, spentTodayUsd } from "./quota";
 import { SceneSplitter } from "./scenes";
@@ -30,16 +31,29 @@ export type WishEvent =
 const DAILY_LIMIT_USD = Number(process.env.DAILY_SPEND_LIMIT_USD ?? 20);
 
 const RECENT_WISHES = 100;
+const OWN_RECENT_WISHES = 10;
 
-/** 최근 소원들에 나온 키워드별 횟수. 같은 키워드만 반복되는 쏠림을 막는 데 쓴다. */
-async function recentKeywordUses(): Promise<RecentUses> {
+/** 최근 소원들에 나온 키워드별 사용량. 같은 키워드만 반복되는 쏠림을 막는 데 쓴다. */
+async function recentKeywordUses(ip: string): Promise<RecentUses> {
   const recent = db.select({ id: wishes.id }).from(wishes).orderBy(desc(wishes.createdAt)).limit(RECENT_WISHES);
-  const rows = await db
-    .select({ id: wishKeywords.keywordId, uses: sql<number>`count(*)::int` })
-    .from(wishKeywords)
-    .where(inArray(wishKeywords.wishId, recent))
-    .groupBy(wishKeywords.keywordId);
-  return new Map(rows.map(({ id, uses }) => [id, uses]));
+  const own = db.select({ id: wishes.id }).from(wishes).where(eq(wishes.ip, ip)).orderBy(desc(wishes.createdAt)).limit(OWN_RECENT_WISHES);
+  const [rows, ownRows] = await Promise.all([
+    db
+      .select({ wishId: wishKeywords.wishId, keywordId: wishKeywords.keywordId })
+      .from(wishKeywords)
+      .innerJoin(wishes, eq(wishes.id, wishKeywords.wishId))
+      .where(inArray(wishKeywords.wishId, recent))
+      .orderBy(desc(wishes.createdAt)),
+    db.select({ keywordId: wishKeywords.keywordId }).from(wishKeywords).where(inArray(wishKeywords.wishId, own)),
+  ]);
+
+  // Map은 넣은 순서를 지키므로 최신 소원부터 묶인다.
+  const byWish = new Map<string, number[]>();
+  for (const { wishId, keywordId } of rows) byWish.set(wishId, [...(byWish.get(wishId) ?? []), keywordId]);
+  return decayedUses(
+    [...byWish.values()],
+    ownRows.map(({ keywordId }) => keywordId),
+  );
 }
 
 /**
@@ -83,22 +97,23 @@ export async function runWish(text: string, ip: string, emit: (event: WishEvent)
   emit({ type: "start", id: wish.id, remaining, mock: mockMode() });
 
   try {
-    const [catalog, recentUses] = await Promise.all([db.select().from(keywords), recentKeywordUses()]);
-    const shortlist = sampleCandidates(catalog, recentUses);
+    const [catalog, recentUses] = await Promise.all([db.select().from(keywords), recentKeywordUses(ip)]);
+    const context = { recentUses, domains: detectDomains(text) };
+    const shortlist = sampleCandidates(catalog, context);
     const { analysis, picks, costUsd: analysisCost } = await analyzeWish(text, shortlist);
-    const drawn = drawKeywords(shortlist, picks, misfortuneBeforeKeywords(analysis), recentUses);
-    const severityAverage = drawn.reduce((sum, keyword) => sum + keyword.severity, 0) / Math.max(drawn.length, 1);
-
-    const misfortune = computeMisfortune(analysis, severityAverage);
     const quality = computeQuality(analysis);
     const tier = storyTier(quality);
+    const drawn = drawKeywords(shortlist, picks, { severity: misfortuneBeforeKeywords(analysis), styleSlots: tier.styleSlots }, context);
+    const severityAverage = averageSeverity(drawn);
+
+    const misfortune = computeMisfortune(analysis, severityAverage);
 
     const splitter = new SceneSplitter();
     const send = (deltas: ReturnType<SceneSplitter["push"]>) => {
       for (const delta of deltas) emit({ type: "delta", ...delta });
     };
     const storyCost = await generateStory(
-      { wish: text, keywords: drawn.map((keyword) => keyword.word), direction: storyDirection(misfortune, analysis.taboo), tier },
+      { wish: text, keywords: drawn, direction: storyDirection(misfortune, analysis.taboo), tier },
       (chunk) => send(splitter.push(chunk)),
     );
     send(splitter.flush());
