@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        app: [gateway, jeenee]
+        app: [gateway, jeenee, j-son]
     defaults:
       run:
         working-directory: apps/${{ matrix.app }}

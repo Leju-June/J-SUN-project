@@ -3097,3 +3097,14 @@ html[data-theme="comic"] .chip {
 .panel-inline-form {
   display: inline;
 }
+
+/* 왼쪽 사이드바는 스크롤은 되지만 스크롤바를 그리지 않는다. 테마 규칙보다 뒤에 두어 모두 덮는다. */
+.side-left,
+.side-left .frame-body {
+  scrollbar-width: none;
+}
+
+.side-left::-webkit-scrollbar,
+.side-left .frame-body::-webkit-scrollbar {
+  display: none;
+}

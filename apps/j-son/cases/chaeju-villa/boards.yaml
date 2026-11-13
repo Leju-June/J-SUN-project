@@ -1,0 +1,68 @@
+# 추리판. text의 {이름} 자리가 빈칸이고, blanks에서 정답 단서(clues.yaml의 id)를 정한다.
+# format: statement(추리판 서술) · mail(메일 보내기) · chat(메신저에서 묻기)
+- id: overview
+  chapter: prologue
+  format: statement
+  title: 사건 개요
+  text: |
+    지난 1년간 채주빌라에서 접수된 실종신고는 모두 네 건이다.
+
+    첫 실종자는 {room}에 살던 {who}. 함께 살던 가족 {family}가 아니라 {reporter}가 신고했다.
+
+    실종자는 {from}부터 {to}까지, 한 층에 한 명씩 나왔다.
+  blanks:
+    room: { answer: room.204, hint: 어디 }
+    who: { answer: person.ideun, hint: 누구 }
+    family: { answer: person.semi, hint: 누구 }
+    reporter: { answer: person.park, hint: 누구 }
+    from: { answer: floor.2, hint: 어디 }
+    to: { answer: floor.5, hint: 어디 }
+  solved:
+    - 정리하고 보니 가지런하다. 2층, 3층, 4층, 5층. 한 층에 한 명씩, 아래에서 위로.
+    - 우연이라고 하기엔 너무 반듯한 순서다.
+    - 박채주가 경비원 강한석의 연락처를 보내왔다. 단말에는 인터넷 검색 권한이 내려왔다.
+
+- id: ask-guard
+  chapter: ch1
+  format: chat
+  thread: kang
+  title: 강한석에게 묻기
+  text: 실종자들이 마지막으로 목격된 날은 네 번 모두 {day}이었습니다. 강한석 씨의 {off}이죠. 그날 밤 현관 {cam} 영상에는 정말 아무것도 없었습니까?
+  blanks:
+    day: { answer: time.tuesday, hint: 언제 }
+    off: { answer: thing.dayoff, hint: 무엇 }
+    cam: { answer: thing.cctv, hint: 무엇 }
+  fail:
+    - …무슨 말씀인지 잘 모르겠습니다.
+  solved:
+    - …알고 계셨습니까.
+    - "[화요일] 밤 [영상]은 없습니다. 네 번 다, [저녁 8시]부터 [자정]까지 [녹화]가 끊겨 있었습니다."
+    - "[사장님] 말씀으로는 [야시장]이 [전기]를 끌어다 써서 화요일마다 [정전]이 난다고 했습니다. 그때 [녹화기]가 꺼진다고."
+    - "[경찰]에도 그렇게 설명하셨고, 다들 그런가 보다 했습니다. 저도 그랬습니다."
+    - "그런데 [김사수] 씨 말로는, 정전이라던 그 시간에도 [계단] [센서등]은 멀쩡히 켜졌답니다."
+
+- id: report
+  chapter: ch1
+  format: mail
+  requires: [board:ask-guard]
+  title: 1차 보고
+  mail:
+    to: 도기현 팀장 (형사2팀)
+    subject: 채주빌라 건 1차 보고
+  text: |
+    팀장님, 채주빌라 건 1차 보고드립니다.
+
+    네 사람이 마지막으로 목격된 날은 모두 {day}입니다. 이날은 경비원 {guard}이 쉬는 날이고, 그 밤마다 현관 CCTV 녹화가 끊겨 있었습니다.
+
+    집주인은 {market} 때문에 {blackout}이 나서 그렇다고 설명해 왔습니다. 그러나 상인회는 {power}를 따로 쓰고, 빌라 앞 골목에는 그런 기록이 없습니다.
+
+    경비원이 쉬는 밤, 경비실과 녹화기를 관리하는 사람은 {keeper}입니다.
+  blanks:
+    day: { answer: time.tuesday, hint: 언제 }
+    guard: { answer: person.kang, hint: 누구 }
+    market: { answer: thing.market, hint: 무엇 }
+    blackout: { answer: thing.blackout, hint: 무엇 }
+    power: { answer: thing.generator, hint: 무엇 }
+    keeper: { answer: person.park, hint: 누구 }
+  solved:
+    - 보고 메일을 보냈다.

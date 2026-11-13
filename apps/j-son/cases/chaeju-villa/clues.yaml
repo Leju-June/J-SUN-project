@@ -1,0 +1,15 @@
+# 추리판의 정답이 되는 단서. 플레이어에게는 어떤 단어가 단서인지 알려 주지 않는다.
+# label이나 aliases와 같은 말을 단서 노트에서 끌어다 놓으면 같은 단서로 본다.
+- { id: room.204, label: 204호, kind: place }
+- { id: person.ideun, label: 이든, kind: person }
+- { id: person.semi, label: 세미, kind: person, aliases: [어머니] }
+- { id: person.park, label: 박채주, kind: person, aliases: [사장님, 집주인, 주인, 임대인] }
+- { id: floor.2, label: 2층, kind: place }
+- { id: floor.5, label: 5층, kind: place }
+- { id: time.tuesday, label: 화요일, kind: time }
+- { id: thing.dayoff, label: 휴무일, kind: thing }
+- { id: thing.cctv, label: CCTV, kind: thing, aliases: [녹화기] }
+- { id: person.kang, label: 강한석, kind: person }
+- { id: thing.market, label: 야시장, kind: thing, aliases: [화요 야시장] }
+- { id: thing.blackout, label: 정전, kind: thing }
+- { id: thing.generator, label: 발전기, kind: thing }

@@ -3,17 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "install:all": "npm --prefix apps/gateway install && npm --prefix apps/jeenee install",
+    "install:all": "npm --prefix apps/gateway install && npm --prefix apps/jeenee install && npm --prefix apps/j-son install",
     "up": "docker compose up -d --wait",
     "down": "docker compose down",
     "db:up": "docker compose up -d --wait db",
-    "db:migrate": "npm --prefix apps/gateway run db:migrate && npm --prefix apps/jeenee run db:migrate",
+    "db:migrate": "npm --prefix apps/gateway run db:migrate && npm --prefix apps/jeenee run db:migrate && npm --prefix apps/j-son run db:migrate",
     "db:seed": "npm --prefix apps/jeenee run db:seed",
-    "dev": "concurrently -n gateway,jeenee -c cyan,magenta \"npm --prefix apps/gateway run dev\" \"npm --prefix apps/jeenee run dev\"",
-    "build": "npm --prefix apps/gateway run build && npm --prefix apps/jeenee run build",
-    "start": "concurrently -n gateway,jeenee -c cyan,magenta \"npm --prefix apps/gateway run start\" \"npm --prefix apps/jeenee run start -- -p 3001\"",
-    "typecheck": "npm --prefix apps/gateway run typecheck && npm --prefix apps/jeenee run typecheck",
-    "test": "npm --prefix apps/gateway test && npm --prefix apps/jeenee test"
+    "dev": "concurrently -n gateway,jeenee,j-son -c cyan,magenta,yellow \"npm --prefix apps/gateway run dev\" \"npm --prefix apps/jeenee run dev\" \"npm --prefix apps/j-son run dev\"",
+    "build": "npm --prefix apps/gateway run build && npm --prefix apps/jeenee run build && npm --prefix apps/j-son run build",
+    "start": "concurrently -n gateway,jeenee,j-son -c cyan,magenta,yellow \"npm --prefix apps/gateway run start\" \"npm --prefix apps/jeenee run start -- -p 3001\" \"npm --prefix apps/j-son run start -- -p 3002\"",
+    "typecheck": "npm --prefix apps/gateway run typecheck && npm --prefix apps/jeenee run typecheck && npm --prefix apps/j-son run typecheck",
+    "test": "npm --prefix apps/gateway test && npm --prefix apps/jeenee test && npm --prefix apps/j-son test"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

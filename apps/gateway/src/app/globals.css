@@ -20,6 +20,17 @@ body {
   min-height: 100%;
 }
 
+/* footer가 항상 바닥에 붙도록 본문을 늘린다. */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -94,7 +105,100 @@ main {
 }
 
 .hero .sun-mark {
-  filter: drop-shadow(0 0 28px rgb(255 255 255 / 45%));
+  overflow: visible;
+  filter: drop-shadow(0 0 22px rgb(255 255 255 / 35%));
+}
+
+/* 태양 애니메이션: 몸통은 시계·반시계로 흔들리듯 돌고, 빛살은 커졌다 작아지고, 고리가 바깥으로 퍼진다. */
+.sun-animated .sun-body,
+.sun-animated .sun-rays,
+.sun-animated .sun-glow,
+.sun-animated .sun-wave {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+}
+
+.sun-animated .sun-body {
+  animation: sun-sway 10s ease-in-out infinite;
+}
+
+.sun-animated .sun-rays {
+  animation: sun-breathe 2.6s ease-in-out infinite alternate;
+}
+
+.sun-animated .sun-glow {
+  animation: sun-glow 2.6s ease-in-out infinite alternate;
+}
+
+.sun-animated .sun-wave {
+  opacity: 0;
+  animation: sun-emit 3.2s ease-out infinite;
+}
+
+.sun-animated .sun-wave-late {
+  animation-delay: 1.6s;
+}
+
+@keyframes sun-sway {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(150deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* 빛살은 줄어들며 사라졌다가 다시 뻗어 나오고, 가운데 고리만 남는다. */
+@keyframes sun-breathe {
+  from {
+    transform: scale(0.35);
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.2;
+  }
+  to {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* 빛살이 가장 작아질 때 빛무리는 거의 꺼지고, 커질 때 한껏 밝아진다. */
+@keyframes sun-glow {
+  from {
+    transform: scale(0.55);
+    opacity: 0.04;
+  }
+  to {
+    transform: scale(1.35);
+    opacity: 1;
+  }
+}
+
+@keyframes sun-emit {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sun-animated .sun-body,
+  .sun-animated .sun-rays,
+  .sun-animated .sun-glow,
+  .sun-animated .sun-wave {
+    animation: none;
+  }
+  .sun-animated .sun-wave {
+    display: none;
+  }
 }
 
 .hero h1 {
@@ -117,8 +221,14 @@ main {
   list-style: none;
 }
 
+/* 설명 길이가 달라도 한 줄의 카드 높이가 같게 한다. */
+.services li {
+  display: flex;
+}
+
 .card {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 6px;
   min-height: 160px;
@@ -149,9 +259,27 @@ a.card:hover {
 }
 
 .card .go {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-top: auto;
   padding-top: 12px;
   font-size: 0.9rem;
+}
+
+/* 서비스가 알려 주는 진행 현황. 예) "사건 1/1 해결" */
+.card .badge {
+  padding: 1px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.card .badge.done {
+  border-color: var(--text);
+  color: var(--text);
 }
 
 .card.empty {
@@ -243,4 +371,73 @@ a.card:hover {
   .hero h1 {
     font-size: 1.6rem;
   }
+}
+
+/* footer */
+.footer {
+  width: min(960px, 100% - 32px);
+  margin: 0 auto;
+  padding: 20px 0 28px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px 24px;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+
+.footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.footer-copy {
+  margin: 14px 0 0;
+}
+
+/* 약관·방침 같은 긴 글 */
+.doc {
+  width: min(720px, 100%);
+  margin: 24px auto 0;
+}
+
+.doc h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+}
+
+.doc-meta {
+  margin: 0 0 28px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.doc h2 {
+  margin: 28px 0 8px;
+  font-size: 1.05rem;
+}
+
+.doc p,
+.doc li {
+  color: #d6d6d6;
+}
+
+.doc ul {
+  padding-left: 20px;
 }

@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/login", "/signup", "/api/", "/jeenee/admin", "/jeenee/history", "/jeenee/api/"],
+      disallow: ["/login", "/signup", "/api/", "/jeenee/admin", "/jeenee/history", "/jeenee/api/", "/j-son/api/"],
     },
   };
 }

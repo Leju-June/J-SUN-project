@@ -8,6 +8,12 @@
 			flush_interval -1
 		}
 	}
+	@json path /j-son /j-son/*
+	handle @json {
+		reverse_proxy j-son:3000 {
+			header_up X-Real-IP {remote_host}
+		}
+	}
 	handle {
 		reverse_proxy gateway:3000 {
 			header_up X-Real-IP {remote_host}

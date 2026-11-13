@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { currentUser } from "@/lib/session";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SunMark } from "@/components/SunMark";
 import "./globals.css";
 
@@ -45,6 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </nav>
         </header>
         <main>{children}</main>
+        <SiteFooter />
       </body>
     </html>
   );

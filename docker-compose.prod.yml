@@ -15,6 +15,7 @@ services:
     depends_on:
       - gateway
       - jeenee
+      - j-son
 
   gateway:
     image: ghcr.io/leju-june/j-sun-gateway:latest
@@ -41,7 +42,18 @@ services:
       db:
         condition: service_healthy
 
-  # 배포 때 `docker compose -f docker-compose.prod.yml run --rm migrate-gateway && ... run --rm migrate-jeenee`
+  j-son:
+    image: ghcr.io/leju-june/j-sun-j-son:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://jsun:${POSTGRES_PASSWORD}@db:5432/jsun
+    expose:
+      - "3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # 배포 때 `docker compose -f docker-compose.prod.yml run --rm migrate-gateway && ... run --rm migrate-jeenee && ... run --rm migrate-j-son`
   migrate-gateway:
     image: ghcr.io/leju-june/j-sun-gateway:latest
     profiles: [tools]
@@ -59,6 +71,16 @@ services:
     environment:
       DATABASE_URL: postgres://jsun:${POSTGRES_PASSWORD}@db:5432/jsun
     command: sh -c "npm run db:migrate && npm run db:seed"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  migrate-j-son:
+    image: ghcr.io/leju-june/j-sun-j-son:latest
+    profiles: [tools]
+    environment:
+      DATABASE_URL: postgres://jsun:${POSTGRES_PASSWORD}@db:5432/jsun
+    command: npm run db:migrate
     depends_on:
       db:
         condition: service_healthy

@@ -6,9 +6,10 @@
 | ----------- | ---------------- | --------- | -------------------------------------- |
 | `/`         | `apps/gateway`   | 3000      | 로비, 로그인·회원가입, 공통 세션, 앱 아이콘 |
 | `/jeenee`   | `apps/jeenee`    | 3001      | 소원 서비스 Jeenee                     |
+| `/j-son`    | `apps/j-son`    | 3002      | 데스크톱 추리 게임 J-SON (첫 사건 J-SON I) |
 | (다음 칸)   | —                | —         | 로비에 빈 자리만 잡아 두었다            |
 
-Postgres는 하나를 같이 쓴다. 게이트웨이는 `auth` 스키마(`auth.users`, `auth.sessions`)를 맡고, 각 서비스는 자기 표만 만든다. 마이그레이션 기록 표도 앱마다 따로 둔다.
+Postgres는 하나를 같이 쓴다. 게이트웨이는 `auth` 스키마(`auth.users`, `auth.sessions`)를 맡고, 각 서비스는 자기 표만 만든다(J-SON은 `j_son` 스키마). 마이그레이션 기록 표도 앱마다 따로 둔다.
 
 ## 로컬 실행
 
@@ -19,13 +20,14 @@ npm install
 npm run install:all
 cp apps/gateway/.env.example apps/gateway/.env.local
 cp apps/jeenee/.env.example apps/jeenee/.env.local
+cp apps/j-son/.env.example apps/j-son/.env.local
 npm run up
 npm run db:migrate
 npm run db:seed
 npm run dev
 ```
 
-`npm run up`은 DB와 개발용 프록시를 띄운다. 앱 두 개가 뜨면 <http://localhost:8080> 에서 전체 사이트를 볼 수 있다. 앱 하나만 따로 볼 때는 각 포트로 직접 들어가도 된다(로그인 쿠키는 같은 주소에서만 공유되므로 프록시를 거쳐야 한다).
+`npm run up`은 DB와 개발용 프록시를 띄운다. 앱들이 뜨면 <http://localhost:8080> 에서 전체 사이트를 볼 수 있다. 앱 하나만 따로 볼 때는 각 포트로 직접 들어가도 된다(로그인 쿠키는 같은 주소에서만 공유되므로 프록시를 거쳐야 한다).
 
 ## 로그인
 

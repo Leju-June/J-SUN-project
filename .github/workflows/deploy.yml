@@ -14,7 +14,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        app: [gateway, jeenee]
+        app: [gateway, jeenee, j-son]
     steps:
       - uses: actions/checkout@v4
 
@@ -59,8 +59,9 @@ jobs:
             set -e
             cd ~/j-sun
             docker login ghcr.io -u '$GHCR_USER' --password-stdin
-            docker compose -f docker-compose.prod.yml pull gateway jeenee migrate-gateway migrate-jeenee
+            docker compose -f docker-compose.prod.yml pull gateway jeenee j-son migrate-gateway migrate-jeenee migrate-j-son
             docker compose -f docker-compose.prod.yml run --rm migrate-gateway
             docker compose -f docker-compose.prod.yml run --rm migrate-jeenee
+            docker compose -f docker-compose.prod.yml run --rm migrate-j-son
             docker compose -f docker-compose.prod.yml up -d
           "
