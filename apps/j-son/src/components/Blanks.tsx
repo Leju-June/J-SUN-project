@@ -31,13 +31,13 @@ export function BlankText({ board }: { board: BoardView }) {
             className={`blank${value ? " blank-filled" : ""}${active ? " blank-active" : ""}`}
             data-blank={part.id}
             data-board={board.id}
-            aria-label={value ? `빈칸: ${value}. 누르면 비웁니다` : `빈칸 (${part.hint})`}
+            aria-label={value ? `빈칸: ${value}. 누르면 비웁니다` : "빈칸"}
             onClick={() => {
               if (value) setAnswer(board.id, part.id, null);
               setActiveBlank(active && !value ? null : { boardId: board.id, blankId: part.id });
             }}
           >
-            {value || part.hint}
+            {value || " "}
           </button>
         );
       })}

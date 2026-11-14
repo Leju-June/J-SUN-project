@@ -21,7 +21,7 @@ pages:
     title: 화요 야시장 이용 안내 - XX시 문화관광
     site: XX시 문화관광
     url: tour.xx-city.example/night-market
-    keywords: [야시장, 화요야시장, 화요시장, 시장, 화요일]
+    keywords: [야시장, 화요야시장, 화요시장, 시장, 화요일, 정전, 상인회, 발전기, 전기, 전력]
     lines:
       - "# [화요 야시장] 이용 안내"
       - "- [운영]: 매주 [화요일] [저녁 6시] ~ [밤 11시]"
@@ -34,7 +34,7 @@ pages:
     title: 묻고 답하기 - 화요동 상인회
     site: 화요동 상인회
     url: hwayo-market.example/qna
-    keywords: [정전, 상인회, 발전기, 전기, 전력]
+    keywords: [정전, 상인회, 발전기, 전기, 전력, 야시장, 화요야시장, 화요시장, 시장, 화요일]
     lines:
       - "# 묻고 답하기"
       - "; [화요동 상인회] 게시판"

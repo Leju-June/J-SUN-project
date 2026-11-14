@@ -11,12 +11,12 @@
 
     실종자는 {from}부터 {to}까지, 한 층에 한 명씩 나왔다.
   blanks:
-    room: { answer: room.204, hint: 어디 }
-    who: { answer: person.ideun, hint: 누구 }
-    family: { answer: person.semi, hint: 누구 }
-    reporter: { answer: person.park, hint: 누구 }
-    from: { answer: floor.2, hint: 어디 }
-    to: { answer: floor.5, hint: 어디 }
+    room: { answer: room.204 }
+    who: { answer: person.ideun }
+    family: { answer: person.semi }
+    reporter: { answer: person.park }
+    from: { answer: floor.2 }
+    to: { answer: floor.5 }
   solved:
     - 정리하고 보니 가지런하다. 2층, 3층, 4층, 5층. 한 층에 한 명씩, 아래에서 위로.
     - 우연이라고 하기엔 너무 반듯한 순서다.
@@ -29,9 +29,9 @@
   title: 강한석에게 묻기
   text: 실종자들이 마지막으로 목격된 날은 네 번 모두 {day}이었습니다. 강한석 씨의 {off}이죠. 그날 밤 현관 {cam} 영상에는 정말 아무것도 없었습니까?
   blanks:
-    day: { answer: time.tuesday, hint: 언제 }
-    off: { answer: thing.dayoff, hint: 무엇 }
-    cam: { answer: thing.cctv, hint: 무엇 }
+    day: { answer: time.tuesday }
+    off: { answer: thing.dayoff }
+    cam: { answer: thing.cctv }
   fail:
     - …무슨 말씀인지 잘 모르겠습니다.
   solved:
@@ -58,11 +58,11 @@
 
     경비원이 쉬는 밤, 경비실과 녹화기를 관리하는 사람은 {keeper}입니다.
   blanks:
-    day: { answer: time.tuesday, hint: 언제 }
-    guard: { answer: person.kang, hint: 누구 }
-    market: { answer: thing.market, hint: 무엇 }
-    blackout: { answer: thing.blackout, hint: 무엇 }
-    power: { answer: thing.generator, hint: 무엇 }
-    keeper: { answer: person.park, hint: 누구 }
+    day: { answer: time.tuesday }
+    guard: { answer: person.kang }
+    market: { answer: thing.market }
+    blackout: { answer: thing.blackout }
+    power: { answer: thing.generator }
+    keeper: { answer: person.park }
   solved:
     - 보고 메일을 보냈다.

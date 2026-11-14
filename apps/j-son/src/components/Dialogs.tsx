@@ -3,11 +3,6 @@
 import { useEffect, useState } from "react";
 import { useGame } from "./game-context";
 
-const playTime = (seconds: number) => {
-  const minutes = Math.max(1, Math.round(seconds / 60));
-  return minutes >= 60 ? `${Math.floor(minutes / 60)}시간 ${minutes % 60}분` : `${minutes}분`;
-};
-
 /** 글을 한 줄씩 띄운다. 움직임을 줄인 환경에서는 한꺼번에 보여 준다. */
 function useReveal(count: number, ms: number) {
   const [shown, setShown] = useState(1);
@@ -58,12 +53,11 @@ export function SolvedDialog({ boardId, onClose }: { boardId: string; onClose: (
 
 /** 데모의 끝. */
 export function Ending({ onClose }: { onClose: () => void }) {
-  const { view, state } = useGame();
+  const { view } = useGame();
   const ending = view.ending;
   const [shown, skip] = useReveal(ending?.lines.length ?? 0, 1900);
   if (!ending) return null;
   const done = shown >= ending.lines.length;
-  const tries = Object.values(state.boards).reduce((sum, board) => sum + board.tries, 0);
 
   return (
     <div className="ending" role="dialog" aria-modal="true" aria-label={ending.title}>
@@ -76,10 +70,6 @@ export function Ending({ onClose }: { onClose: () => void }) {
         {done && (
           <div className="ending-end">
             <h2>{ending.title}</h2>
-            {ending.outro && <p>{ending.outro}</p>}
-            <p className="ending-stats">
-              {view.episode} · {view.title} · 플레이 {playTime(state.playSeconds)} · 제출 {tries}회 · 모은 단서 {state.notes.length}개
-            </p>
             <div className="ending-actions">
               <button type="button" className="title-button" autoFocus onClick={onClose}>
                 단말로 돌아가기

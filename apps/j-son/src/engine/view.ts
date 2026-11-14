@@ -33,7 +33,7 @@ export type BoardView = {
   title: string;
   mail: { to: string; subject: string } | null;
   thread: string | null;
-  parts: (BoardPart & { hint?: string })[];
+  parts: BoardPart[];
   solved: boolean;
   /** 맞힌 뒤에 나오는 글. chat 형식은 대화 기록에 나오므로 비워 둔다. */
   solvedLines: string[];
@@ -122,7 +122,7 @@ export function buildView(data: CaseData, state: GameState, progress: Progress):
       title: board.title,
       mail: board.mail ?? null,
       thread: board.thread ?? null,
-      parts: boardParts(board.text).map((part) => (part.t === "blank" ? { ...part, hint: board.blanks[part.id]?.hint } : part)),
+      parts: boardParts(board.text),
       solved,
       solvedLines: solved && board.format !== "chat" ? lines(board.solved) : [],
       failLines: board.format === "chat" ? lines(board.fail) : [],

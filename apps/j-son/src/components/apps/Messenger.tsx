@@ -29,7 +29,7 @@ function Draft({ board, onFailed, disabled }: { board: BoardView; onFailed: (fai
 
   return (
     <div className="chat-draft">
-      <div className="chat-draft-head">직접 묻기 — 빈칸을 채워야 보낼 수 있다</div>
+      <div className="chat-draft-head">직접 묻기</div>
       <p className="chat-draft-text">
         <BlankText board={board} />
       </p>

@@ -16,7 +16,7 @@ export const SERVICES = [
   {
     id: "j-son",
     name: "J-SON",
-    description: "형사의 컴퓨터로 단서를 모아, 사건의 진상을 직접 짜 맞추는 추리 게임.",
+    description: "컴퓨터로 단서를 모아, 진상을 밝힌다.",
     href: "/j-son",
     summary: "/j-son/api/summary",
   },

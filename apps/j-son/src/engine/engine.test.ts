@@ -131,8 +131,8 @@ describe("플레이", () => {
     state = outcome.state;
 
     outcome = step(state, { type: "search", query: "화요동 야시장" });
-    expect(outcome.search!.results.map((result) => result.id)).toEqual(["w-hwayo", "w-market"]);
-    expect(outcome.view.browser!.pages.map((page) => page.id)).toEqual(["w-hwayo", "w-market"]);
+    expect(outcome.search!.results.map((result) => result.id)).toEqual(["w-hwayo", "w-market", "w-faq"]);
+    expect(outcome.view.browser!.pages.map((page) => page.id)).toEqual(["w-hwayo", "w-market", "w-faq"]);
     expect(step(outcome.state, { type: "search", query: "강한석" }).search!.results).toEqual([]);
     state = outcome.state;
 

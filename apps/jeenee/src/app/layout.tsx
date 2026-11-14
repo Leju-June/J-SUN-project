@@ -1,22 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Black_Han_Sans, Gaegu, Gowun_Batang, Gowun_Dodum, Great_Vibes, Nanum_Brush_Script, Nanum_Gothic_Coding, UnifrakturMaguntia } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
 import { AppShell } from "@/components/AppShell";
 import { THEME_BOOT_SCRIPT } from "@/lib/themes";
+// 글꼴은 로컬 파일이다. 브라우저는 해당 테마에서 글자를 그릴 때만 필요한 조각을 내려받는다.
+import "@fontsource/gowun-batang/400.css";
+import "@fontsource/gowun-batang/700.css";
+import "@fontsource/great-vibes/400.css";
+import "@fontsource/nanum-gothic-coding/400.css";
+import "@fontsource/nanum-gothic-coding/700.css";
+import "@fontsource/nanum-brush-script/400.css";
+import "@fontsource/unifrakturmaguntia/400.css";
+import "@fontsource/gowun-dodum/400.css";
+import "@fontsource/black-han-sans/400.css";
+import "@fontsource/gaegu/400.css";
+import "@fontsource/gaegu/700.css";
+import "./fonts.css";
 import "./globals.css";
 
-const serif = Gowun_Batang({ weight: ["400", "700"], subsets: ["latin"], preload: false, variable: "--font-serif" });
-const script = Great_Vibes({ weight: "400", subsets: ["latin"], preload: false, variable: "--font-script" });
 const pixel = localFont({ src: "../../node_modules/@kfonts/neodgm/neodgm.woff2", preload: false, variable: "--font-pixel" });
-// 아래 글꼴은 해당 테마에서 글자를 그릴 때만 내려받는다.
-const mono = Nanum_Gothic_Coding({ weight: ["400", "700"], subsets: ["latin"], preload: false, variable: "--font-mono" });
-const brush = Nanum_Brush_Script({ weight: "400", subsets: ["latin"], preload: false, variable: "--font-brush" });
-const blackletter = UnifrakturMaguntia({ weight: "400", subsets: ["latin"], preload: false, variable: "--font-blackletter" });
-const dodum = Gowun_Dodum({ weight: "400", subsets: ["latin"], preload: false, variable: "--font-dodum" });
-const display = Black_Han_Sans({ weight: "400", subsets: ["latin"], preload: false, variable: "--font-display" });
-const hand = Gaegu({ weight: ["400", "700"], subsets: ["latin"], preload: false, variable: "--font-hand" });
-const fontVariables = [serif, script, pixel, mono, brush, blackletter, dodum, display, hand].map((font) => font.variable).join(" ");
+const fontVariables = pixel.variable;
 const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
 export const metadata: Metadata = {

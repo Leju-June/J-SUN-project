@@ -38,7 +38,7 @@ export function Title({ intro, loading, error, user, resume, onRetry, onStart, o
       </a>
       <EyeMark />
       <h1>J-SON</h1>
-      <p className="title-tag">형사의 컴퓨터로 단서를 모아, 사건의 진상을 직접 짜 맞춘다.</p>
+      <p className="title-tag">컴퓨터로 단서를 모아, 진상을 밝힌다.</p>
 
       <section className="case-card" aria-label="사건">
         <div className="case-card-head">

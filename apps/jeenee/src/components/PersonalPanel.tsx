@@ -28,7 +28,8 @@ export function PersonalPanel({ theme, onThemeChange }: Props) {
             남은 소원 {me.quota.remaining} / {me.quota.allowance}
           </p>
         )}
-        <p className="panel-line panel-links">
+        {/* 로그아웃 폼이 들어가므로 p가 아니라 div를 쓴다. p 안에는 form을 둘 수 없다. */}
+        <div className="panel-line panel-links">
           <Link href="/history" className="panel-link">
             내 기록
           </Link>
@@ -51,7 +52,7 @@ export function PersonalPanel({ theme, onThemeChange }: Props) {
           <a href="/" className="panel-link">
             J-SUN 로비
           </a>
-        </p>
+        </div>
         <InstallButton />
       </Frame>
 

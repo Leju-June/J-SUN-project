@@ -22,14 +22,13 @@ export function Archive() {
       {view.archive.map((entry) => (
         <section key={entry.boardId} className="archive-entry">
           <h3>{entry.title}</h3>
-          <blockquote>{entry.sentence}</blockquote>
           <table>
             <tbody>
               {entry.items.map((item, i) => (
                 <tr key={i}>
                   <th scope="row">{item.label}</th>
                   <td className="archive-kind">{KIND[item.kind]}</td>
-                  <td>{item.src ? <span title={item.ctx ?? undefined}>{item.src}{item.ctx ? ` — “${item.ctx}”` : ""}</span> : <span className="archive-lost">출처 메모 없음</span>}</td>
+                  <td>{item.src ?? <span className="archive-lost">출처 메모 없음</span>}</td>
                 </tr>
               ))}
             </tbody>

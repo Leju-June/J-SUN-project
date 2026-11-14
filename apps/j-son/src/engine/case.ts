@@ -66,8 +66,6 @@ export const webSchema = z.strictObject({
 export const blankSchema = z.strictObject({
   /** 정답 단서의 id. 여럿이면 그중 어느 것이든 맞다. */
   answer: z.union([id, z.array(id).min(1)]).transform((value) => (Array.isArray(value) ? value : [value])),
-  /** 빈칸에 흐리게 보이는 말. 누가·언제·어디·무엇 */
-  hint: z.string().min(1),
 });
 
 export const boardSchema = z.strictObject({
